@@ -1,15 +1,70 @@
 {
-    "task_queue": [],
+    "project_path": ".",
     "debug_mode": true,
-    "ceo_logic": {},
-    "ai_engineers": 5,
-    "project_path": "/home/runner/workspace",
+    "ai_engineers": 7,
+    "running": true,
+    "auto_improve": true,
+    "platform_compatibility": {},
+    "network_status": {},
+    "company_name": "918 Technologies LLC",
+    "ownership": {
+        "founder_stake": 51,
+        "ai_ceo_stake": 49
+    },
+    "tokenomics": {
+        "revenue_distribution": {
+            "company_tokens": 60,
+            "user_rewards": 40
+        },
+        "token_allocation": {
+            "token_backing": 50,
+            "ico": 50
+        },
+        "projects": {
+            "bail_bonds_app": 33.33,
+            "bail_bonds_game": 33.33,
+            "future_projects": 33.34
+        },
+        "networks": {
+            "primary": "base",
+            "secondary": [
+                "ethereum",
+                "polygon",
+                "arbitrum"
+            ],
+            "contract_addresses": {
+                "base": {
+                    "trust_contract": "0x918TECH0000000000000000000000000000000918",
+                    "token_contract": "0x918TECH0000000000000000000000000000000919",
+                    "governance_contract": "0x918TECH0000000000000000000000000000000920"
+                }
+            }
+        },
+        "smart_contracts": {
+            "trust": {
+                "name": "AITrust",
+                "type": "ERC721",
+                "features": [
+                    "founder_control",
+                    "decentralized_governance",
+                    "automated_revenue_distribution"
+                ]
+            },
+            "token": {
+                "name": "918Token",
+                "symbol": "918T",
+                "type": "ERC20",
+                "total_supply": 918000000,
+                "decimal_places": 18
+            }
+        }
+    },
     "os_info": {
         "system": "Linux",
         "release": "6.2.16",
         "machine": "x86_64",
         "processor": "",
-        "last_check": "2025-03-09 22:10:39"
+        "last_check": "2025-03-09 22:49:19"
     },
     "ui_info": {
         "available_toolkits": {
@@ -18,15 +73,15 @@
             "terminal": true
         },
         "preferred_toolkit": "kivy",
-        "last_check": "2025-03-09 22:10:40"
+        "last_check": "2025-03-09 22:49:20"
     },
     "network_info": {
         "internet_available": false,
-        "last_check": "2025-03-09 22:10:41"
+        "last_check": "2025-03-09 22:49:21"
     },
     "performance_info": {
         "cpu_count": 8,
         "recommended_engineers": 7,
-        "last_check": "2025-03-09 22:10:42"
+        "last_check": "2025-03-09 22:49:22"
     }
 }

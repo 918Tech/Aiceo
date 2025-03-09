@@ -1,7 +1,14 @@
 """
 AI CEO Management System - Continuous Improvement Module
-Provides functionality for platform compatibility optimization
+Provides functionality for platform compatibility optimization and quantum learning acceleration
 """
+
+# Import the quantum learning system
+try:
+    from quantum_learning import QuantumLearningSystem
+    QUANTUM_AVAILABLE = True
+except ImportError:
+    QUANTUM_AVAILABLE = False
 
 import os
 import time
@@ -30,6 +37,19 @@ class ContinuousImprovement:
         self.ui_info = {}
         self.network_info = {}
         self.performance_info = {}
+        self.quantum_info = {}
+        self.quantum_system = None
+        
+        # Initialize quantum learning if available
+        if QUANTUM_AVAILABLE:
+            try:
+                self.quantum_system = QuantumLearningSystem(debug_mode=debug_mode)
+                if self.debug_mode:
+                    print("[AI CEO] Quantum learning capabilities initialized")
+            except Exception as e:
+                if self.debug_mode:
+                    print(f"[DEBUG] Quantum system initialization error: {str(e)}")
+                    
         self.load_config()
         
     def load_config(self):
@@ -71,6 +91,13 @@ class ContinuousImprovement:
     def start(self):
         """Start the continuous improvement in a separate thread"""
         if not self.running:
+            # Start quantum learning system if available
+            if self.quantum_system:
+                self.quantum_system.start()
+                if self.debug_mode:
+                    print("[AI CEO] Quantum learning acceleration activated")
+            
+            # Start improvement thread
             self.stop_requested = False
             self.improvement_thread = threading.Thread(target=self.run_improvement_loop)
             self.improvement_thread.daemon = True
@@ -83,6 +110,13 @@ class ContinuousImprovement:
         """Stop the continuous improvement thread"""
         self.stop_requested = True
         self.running = False
+        
+        # Stop quantum learning system if running
+        if self.quantum_system:
+            self.quantum_system.stop()
+            if self.debug_mode:
+                print("[AI CEO] Quantum learning system deactivated")
+                
         if self.debug_mode:
             print("[AI CEO] Self-improvement system stopped.")
     

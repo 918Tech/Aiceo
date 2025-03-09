@@ -1,0 +1,30 @@
+{
+    "reward_1": {
+        "name": "Gift Card $10",
+        "description": "Digital gift card for popular online stores",
+        "points_cost": 1000,
+        "inventory": 50,
+        "created_at": "2025-03-09T22:33:44.462385"
+    },
+    "reward_2": {
+        "name": "Premium Membership",
+        "description": "1 month of ad-free viewing",
+        "points_cost": 750,
+        "inventory": 100,
+        "created_at": "2025-03-09T22:33:44.469707"
+    },
+    "reward_3": {
+        "name": "Exclusive Content",
+        "description": "Access to exclusive premium content",
+        "points_cost": 500,
+        "inventory": null,
+        "created_at": "2025-03-09T22:33:44.473267"
+    },
+    "reward_4": {
+        "name": "Virtual Swag",
+        "description": "Digital merchandise and profile items",
+        "points_cost": 250,
+        "inventory": null,
+        "created_at": "2025-03-09T22:33:44.481406"
+    }
+}

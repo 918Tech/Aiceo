@@ -5,4 +5,6 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "kivy>=2.3.1",
+    "numpy>=2.2.3",
+    "requests>=2.32.3",
 ]

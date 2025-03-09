@@ -1,0 +1,27 @@
+{
+    "Level up your future": {
+        "brand": "TechBoost",
+        "ad_id": "ad_1741559624_1",
+        "points": 5
+    },
+    "Code your dreams into reality": {
+        "brand": "CodeMasters",
+        "ad_id": "ad_1741559624_2",
+        "points": 5
+    },
+    "Smart money for smart people": {
+        "brand": "FinanceGenius",
+        "ad_id": "ad_1741559624_3",
+        "points": 5
+    },
+    "Your health, our priority": {
+        "brand": "HealthPlus",
+        "ad_id": "ad_1741559624_4",
+        "points": 5
+    },
+    "Reach for the stars": {
+        "brand": "SpaceTech",
+        "ad_id": "ad_1741559624_5",
+        "points": 5
+    }
+}

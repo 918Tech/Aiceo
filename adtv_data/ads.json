@@ -1,0 +1,78 @@
+[
+    {
+        "ad_id": "ad_1741559624_1",
+        "brand": "TechBoost",
+        "slogan": "Level up your future",
+        "content": "Ad showing young professionals advancing in tech careers",
+        "duration": 45,
+        "questions": [
+            {
+                "question": "What is TechBoost's slogan?",
+                "options": [
+                    "Tech your way forward",
+                    "Level up your future",
+                    "Boost your tech skills",
+                    "Tomorrow's tech today"
+                ],
+                "correct_answer": "Level up your future",
+                "points": 15
+            }
+        ]
+    },
+    {
+        "ad_id": "ad_1741559624_2",
+        "brand": "CodeMasters",
+        "slogan": "Code your dreams into reality",
+        "content": "Animated ad showing code turning into real-world applications",
+        "duration": 30,
+        "questions": [
+            {
+                "question": "What does the CodeMasters ad show transforming into real applications?",
+                "options": [
+                    "Robots",
+                    "Code",
+                    "Engineers",
+                    "Computers"
+                ],
+                "correct_answer": "Code",
+                "points": 10
+            }
+        ]
+    },
+    {
+        "ad_id": "ad_1741559624_3",
+        "brand": "FinanceGenius",
+        "slogan": "Smart money for smart people",
+        "content": "Ad showing people making wise investment decisions",
+        "duration": 60,
+        "questions": [
+            {
+                "question": "According to the ad, FinanceGenius is for whom?",
+                "options": [
+                    "Rich people",
+                    "Bankers",
+                    "Smart people",
+                    "College students"
+                ],
+                "correct_answer": "Smart people",
+                "points": 10
+            }
+        ]
+    },
+    {
+        "ad_id": "ad_1741559624_4",
+        "brand": "HealthPlus",
+        "slogan": "Your health, our priority",
+        "content": "People enjoying active lifestyles and healthy eating",
+        "duration": 30,
+        "questions": []
+    },
+    {
+        "ad_id": "ad_1741559624_5",
+        "brand": "SpaceTech",
+        "slogan": "Reach for the stars",
+        "content": "Futuristic ad about space technology and exploration",
+        "duration": 45,
+        "questions": []
+    }
+]

@@ -1,6 +1,8 @@
 
 { pkgs }: {
   deps = [
+    pkgs.sox
+    pkgs.imagemagick
     pkgs.pkg-config
     pkgs.mtdev
     pkgs.libcxx
