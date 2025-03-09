@@ -185,7 +185,7 @@ class AICEO:
     """
     AI CEO class that manages the strategic direction of the project
     by analyzing the codebase and making development decisions.
-    """'''
+    """
     
     def __init__(self, project_path):
         self.project_path = project_path
@@ -194,6 +194,7 @@ class AICEO:
         self.decisions = []
         self.last_analysis = None
         self.load_config()
+'''
         
     def load_config(self):
         """Load configuration from the project directory."""
