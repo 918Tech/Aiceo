@@ -11,7 +11,7 @@ class AICEOSystem:
 
     def __init__(self):
         """Initialize the AI CEO system"""
-        self.project_path = os.getcwd()
+        self.project_path = os.getcwd()  # Default to current directory
         self.ai_engineers = 5
         self.debug_mode = True
         self.stop_requested = False
@@ -128,10 +128,35 @@ class AICEOSystem:
                 
         print("[AI CEO] System thread terminated.")
 
+    def set_project_path(self, path):
+        """Set a new project path"""
+        # Normalize and validate path
+        path = os.path.abspath(os.path.expanduser(path))
+        
+        if not os.path.exists(path):
+            print(f"[ERROR] Path does not exist: {path}")
+            return False
+            
+        old_path = self.project_path
+        self.project_path = path
+        print(f"[AI CEO] Project path changed: {old_path} -> {self.project_path}")
+        return True
+        
     def analyze_project(self):
         """Checks for missing logic or files"""
+        # First check if the path exists
+        if not os.path.exists(self.project_path):
+            print(f"[ERROR] Project path doesn't exist: {self.project_path}")
+            return []
+            
+        # Check for missing required files
         required_files = ['ai_ceo.py', 'ai_engineers.py']
-        missing = [f for f in required_files if not os.path.exists(f)]
+        missing = []
+        
+        for file in required_files:
+            file_path = os.path.join(self.project_path, file)
+            if not os.path.exists(file_path):
+                missing.append(file)
         
         if self.debug_mode:
             print(f"[DEBUG] Analyzing project at {self.project_path}")
@@ -159,13 +184,17 @@ class AICEOSystem:
             else:
                 content = f"# AI-generated logic for {component}\n# Generated on {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
             
-            # Write the file
+            # Write the file to the correct project path
+            file_path = os.path.join(self.project_path, component)
             try:
-                with open(component, 'w') as f:
+                # Ensure the directory exists
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                
+                with open(file_path, 'w') as f:
                     f.write(content)
-                print(f"[AI CEO] Successfully generated {component}")
+                print(f"[AI CEO] Successfully generated {file_path}")
             except Exception as e:
-                print(f"[ERROR] Failed to create {component}: {str(e)}")
+                print(f"[ERROR] Failed to create {file_path}: {str(e)}")
         
         print(f"[AI CEO] AI Engineers deployed for: {', '.join(missing_logic)}")
 
