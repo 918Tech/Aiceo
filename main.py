@@ -3,6 +3,11 @@ import json
 import time
 import threading
 import sys
+import tkinter as tk
+from tkinter import filedialog
+import subprocess
+import re
+import shutil
 
 class AICEOSystem:
     """AI CEO Management System - Command Line Interface"""
@@ -148,6 +153,144 @@ class AICEOSystem:
         self.project_path = path
         print(f"[AI CEO] Project path changed: {old_path} -> {self.project_path}")
         return True
+        
+    def clone_project(self, repo_url, target_dir=None):
+        """
+        Clone a Git repository to a target directory and integrate AI CEO system.
+        
+        Args:
+            repo_url (str): URL of the Git repository to clone
+            target_dir (str): Optional target directory name, if not provided,
+                              will use the repository name
+                              
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            # If no target directory provided, extract name from the repo URL
+            if not target_dir:
+                # Extract repository name from URL
+                repo_name = repo_url.split('/')[-1]
+                if repo_name.endswith('.git'):
+                    repo_name = repo_name[:-4]  # Remove .git extension
+                target_dir = os.path.join(os.getcwd(), repo_name)
+            
+            # Validate target directory
+            if os.path.exists(target_dir):
+                print(f"[WARNING] Target directory already exists: {target_dir}")
+                confirm = input("Overwrite existing directory? (y/n): ").lower()
+                if confirm != 'y':
+                    print("[INFO] Clone operation cancelled.")
+                    return False
+                # Delete existing directory
+                shutil.rmtree(target_dir)
+            
+            # Clone the repository
+            print(f"[AI CEO] Cloning repository: {repo_url}")
+            print(f"[AI CEO] Target directory: {target_dir}")
+            
+            # Execute git clone command
+            result = subprocess.run(
+                ['git', 'clone', repo_url, target_dir],
+                capture_output=True,
+                text=True,
+                check=False
+            )
+            
+            # Check for errors
+            if result.returncode != 0:
+                print(f"[ERROR] Git clone failed: {result.stderr}")
+                return False
+            
+            print(f"[AI CEO] Repository cloned successfully to: {target_dir}")
+            
+            # Set the project path to the cloned repository
+            self.set_project_path(target_dir)
+            self.save_config()
+            
+            # Analyze the newly cloned repository
+            print(f"[AI CEO] Analyzing cloned repository...")
+            missing_components = self.analyze_project()
+            
+            # Ask if user wants to integrate AI CEO
+            print("\n[AI CEO] Would you like to integrate AI CEO functionality into this project?")
+            confirm = input("Deploy AI engineers to add AI CEO capabilities? (y/n): ").lower()
+            
+            if confirm == 'y':
+                self.integrate_ai_ceo(target_dir, missing_components)
+                return True
+            else:
+                print("[INFO] Integration skipped.")
+                return True
+                
+        except Exception as e:
+            print(f"[ERROR] Failed to clone repository: {str(e)}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+            
+    def integrate_ai_ceo(self, target_dir, missing_components=None):
+        """
+        Integrate AI CEO functionality into a project
+        
+        Args:
+            target_dir (str): Target directory containing the project
+            missing_components (list): Optional list of missing components
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            print(f"[AI CEO] Integrating AI CEO system into: {target_dir}")
+            
+            # If missing_components is None, analyze the project
+            if missing_components is None:
+                missing_components = self.analyze_project()
+            
+            if missing_components:
+                print(f"[AI CEO] Deploying AI engineers to generate: {', '.join(missing_components)}")
+                self.deploy_ai_engineers(missing_components)
+            
+            # Create integration file that explains the AI CEO system
+            integration_file = os.path.join(target_dir, "ai_ceo_integration.md")
+            
+            # Prepare the components list outside the f-string
+            if missing_components:
+                components_text = "- " + "\n- ".join(missing_components)
+            else:
+                components_text = "- None (All required components were already present)"
+                
+            with open(integration_file, 'w') as f:
+                f.write(f"""# AI CEO Integration
+
+This project has been integrated with the AI CEO Management System.
+
+## Generated Components
+
+The following components were added to your project:
+
+{components_text}
+
+## Next Steps
+
+1. Run the AI CEO system to analyze and optimize your project
+2. Use `python main.py` to start the AI CEO command-line interface
+3. Use the 'status' command to see the current project state
+
+Integration completed on: {time.strftime("%Y-%m-%d %H:%M:%S")}
+""")
+            
+            print(f"[AI CEO] Integration completed successfully!")
+            print(f"[AI CEO] Created integration documentation: {integration_file}")
+            return True
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to integrate AI CEO: {str(e)}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
         
     def analyze_project(self):
         """Checks for missing logic or files"""
@@ -610,6 +753,9 @@ class EngineeringTeam:
                     print("  analyze    - Run a single analysis cycle")
                     print("  project    - Set or view project path")
                     print("  browse     - Browse directories and select a project folder")
+                    print("  dialog     - Open a file dialog to select a project folder")
+                    print("  clone      - Clone a Git repository and integrate AI CEO")
+                    print("  integrate  - Integrate AI CEO into current project")
                     print("  exit       - Exit the application")
                 
                 elif command == 'start':
@@ -684,6 +830,31 @@ class EngineeringTeam:
                 elif command == 'browse':
                     self._browse_directories()
                 
+                elif command == 'dialog':
+                    self._open_file_dialog()
+                
+                elif command == 'clone':
+                    repo_url = input("Enter Git repository URL to clone: ").strip()
+                    if not repo_url:
+                        print("No repository URL provided. Operation cancelled.")
+                    else:
+                        # Optional target directory
+                        target_dir = input("Enter target directory (leave empty for default): ").strip()
+                        if not target_dir:
+                            target_dir = None
+                        
+                        # Execute the clone operation
+                        self.clone_project(repo_url, target_dir)
+                
+                elif command == 'integrate':
+                    print(f"Current project path: {self.project_path}")
+                    confirm = input("Do you want to integrate AI CEO into this project? (y/n): ").lower()
+                    if confirm == 'y':
+                        missing_components = self.analyze_project()
+                        self.integrate_ai_ceo(self.project_path, missing_components)
+                    else:
+                        print("Integration cancelled.")
+                
                 elif command == 'exit':
                     if self.running_thread and self.running_thread.is_alive():
                         print("Stopping AI CEO before exit...")
@@ -732,6 +903,7 @@ class EngineeringTeam:
                 print("\nOptions:")
                 print("  0. Select current directory as project")
                 print("  p. Go to parent directory")
+                print("  d. Use file dialog for selection")
                 print("  c. Cancel browsing")
                 
                 # Get user choice
@@ -751,6 +923,11 @@ class EngineeringTeam:
                         current_dir = parent
                     else:
                         print("Already at root directory.")
+                
+                elif choice == 'd':
+                    # Switch to file dialog
+                    self._open_file_dialog()
+                    return
                 
                 elif choice == 'c':
                     # Cancel browsing
@@ -781,6 +958,41 @@ class EngineeringTeam:
                     import traceback
                     traceback.print_exc()
                 return
+                
+    def _open_file_dialog(self):
+        """Open a graphical file dialog to select a project folder"""
+        try:
+            print("Opening file dialog window...")
+            
+            # Hide the main tkinter window
+            root = tk.Tk()
+            root.withdraw()
+            
+            # Request a directory from the user
+            directory = filedialog.askdirectory(
+                title="Select Project Directory",
+                initialdir=self.project_path,
+                mustexist=True
+            )
+            
+            # Process the selected directory
+            if directory:
+                if self.set_project_path(directory):
+                    print(f"Project path set to: {directory}")
+                    self.save_config()
+            else:
+                print("No directory selected. Project path not changed.")
+                
+            # Clean up the tkinter instance
+            root.destroy()
+            
+        except Exception as e:
+            print(f"Error opening file dialog: {str(e)}")
+            print("Note: GUI dialogs may not work in all environments.")
+            print("Try using the 'browse' or 'project' commands instead.")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
 
 if __name__ == '__main__':
     ai_ceo_system = AICEOSystem()
