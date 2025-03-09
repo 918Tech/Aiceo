@@ -2,5 +2,31 @@
     "task_queue": [],
     "debug_mode": true,
     "ceo_logic": {},
-    "ai_engineers": 5
+    "ai_engineers": 5,
+    "project_path": "/home/runner/workspace",
+    "os_info": {
+        "system": "Linux",
+        "release": "6.2.16",
+        "machine": "x86_64",
+        "processor": "",
+        "last_check": "2025-03-09 22:10:39"
+    },
+    "ui_info": {
+        "available_toolkits": {
+            "kivy": true,
+            "tkinter": true,
+            "terminal": true
+        },
+        "preferred_toolkit": "kivy",
+        "last_check": "2025-03-09 22:10:40"
+    },
+    "network_info": {
+        "internet_available": false,
+        "last_check": "2025-03-09 22:10:41"
+    },
+    "performance_info": {
+        "cpu_count": 8,
+        "recommended_engineers": 7,
+        "last_check": "2025-03-09 22:10:42"
+    }
 }

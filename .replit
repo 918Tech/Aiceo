@@ -23,6 +23,10 @@ args = "AI_CEO_App"
 task = "workflow.run"
 args = "main_application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "AI_CEO_CLI"
+
 [[workflows.workflow]]
 name = "AI_CEO_App"
 author = "agent"
@@ -50,6 +54,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+
+[[workflows.workflow]]
+name = "AI_CEO_CLI"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python main.py cli"
 
 [nix]
 channel = "stable-24_05"

@@ -8,6 +8,7 @@ from tkinter import filedialog
 import subprocess
 import re
 import shutil
+from continuous_improvement import ContinuousImprovement
 
 class AICEOSystem:
     """AI CEO Management System - Command Line Interface"""
@@ -23,6 +24,12 @@ class AICEOSystem:
         self.task_queue = []
         self.ceo_logic = {}
         self.running_thread = None
+        self.improvement_thread = None
+        # Platform compatibility information
+        self.os_info = {}
+        self.ui_info = {}
+        self.network_info = {}
+        self.performance_info = {}
         self.load_config()
         self.print_welcome()
         
@@ -52,6 +59,12 @@ class AICEOSystem:
                     saved_path = config.get("project_path", "")
                     if saved_path and os.path.exists(saved_path):
                         self.project_path = saved_path
+                        
+                    # Load platform compatibility information
+                    self.os_info = config.get("os_info", {})
+                    self.ui_info = config.get("ui_info", {})
+                    self.network_info = config.get("network_info", {})
+                    self.performance_info = config.get("performance_info", {})
             else:
                 self.save_config()
         except Exception as e:
@@ -65,7 +78,12 @@ class AICEOSystem:
                 "debug_mode": self.debug_mode,
                 "ceo_logic": self.ceo_logic,
                 "ai_engineers": self.ai_engineers,
-                "project_path": self.project_path  # Save the project path
+                "project_path": self.project_path,  # Save the project path
+                # Save compatibility information
+                "os_info": self.os_info,
+                "ui_info": self.ui_info,
+                "network_info": self.network_info,
+                "performance_info": self.performance_info
             }
             with open(self.CONFIG_FILE, 'w') as f:
                 json.dump(config_data, f, indent=4)
@@ -103,9 +121,28 @@ class AICEOSystem:
         else:
             print("[AI CEO] System stopped successfully.")
 
+    def _continuous_improvement(self):
+        """Continuously works on improving the AI CEO system for cross-platform compatibility"""
+        # Use the dedicated ContinuousImprovement class
+        improvement_system = ContinuousImprovement(self.CONFIG_FILE, self.debug_mode)
+        improvement_system.start()
+        
+        # Keep the thread alive until stop is requested
+        while not self.stop_requested:
+            time.sleep(5)
+            
+        # Stop the improvement system when main thread stops
+        improvement_system.stop()
+    
     def run_ai_ceo(self):
-        """Runs the AI CEO system in a loop"""
+        """Runs the AI CEO system in a loop with continuous self-improvement"""
         iterations = 0
+        
+        # Start the self-improvement thread
+        self.improvement_thread = threading.Thread(target=self._continuous_improvement)
+        self.improvement_thread.daemon = True
+        self.improvement_thread.start()
+        
         while not self.stop_requested:
             iterations += 1
             try:
@@ -167,68 +204,286 @@ class AICEOSystem:
             bool: True if successful, False otherwise
         """
         try:
-            # If no target directory provided, extract name from the repo URL
-            if not target_dir:
-                # Extract repository name from URL
-                repo_name = repo_url.split('/')[-1]
-                if repo_name.endswith('.git'):
-                    repo_name = repo_name[:-4]  # Remove .git extension
-                target_dir = os.path.join(os.getcwd(), repo_name)
-            
-            # Validate target directory
-            if os.path.exists(target_dir):
-                print(f"[WARNING] Target directory already exists: {target_dir}")
-                confirm = input("Overwrite existing directory? (y/n): ").lower()
+            print("\n========== GIT REPOSITORY CLONING ==========")
+            # Validate repository URL
+            if not repo_url:
+                print("[ERROR] No repository URL provided.")
+                return False
+                
+            # Support different Git URL formats
+            if not (repo_url.startswith('http') or 
+                   repo_url.startswith('https') or 
+                   repo_url.startswith('git@') or 
+                   repo_url.startswith('ssh:')):
+                print("[WARNING] URL format may not be valid. Supported formats:")
+                print("  • https://github.com/username/repo.git")
+                print("  • git@github.com:username/repo.git")
+                print("  • ssh://git@github.com/username/repo.git")
+                confirm = input("Continue anyway? (y/n): ").lower()
                 if confirm != 'y':
                     print("[INFO] Clone operation cancelled.")
                     return False
-                # Delete existing directory
-                shutil.rmtree(target_dir)
             
-            # Clone the repository
-            print(f"[AI CEO] Cloning repository: {repo_url}")
-            print(f"[AI CEO] Target directory: {target_dir}")
+            # If no target directory provided, extract name from the repo URL
+            if not target_dir:
+                # Extract repository name from URL
+                try:
+                    if '/' in repo_url:
+                        repo_name = repo_url.split('/')[-1]
+                    elif ':' in repo_url:
+                        repo_name = repo_url.split(':')[-1].split('/')[-1]
+                    else:
+                        repo_name = "cloned_repo"
+                        
+                    if repo_name.endswith('.git'):
+                        repo_name = repo_name[:-4]  # Remove .git extension
+                    
+                    target_dir = os.path.join(os.getcwd(), repo_name)
+                except Exception as e:
+                    print(f"[WARNING] Could not extract repo name from URL: {str(e)}")
+                    target_dir = os.path.join(os.getcwd(), "cloned_repo")
+                    
+                print(f"Default target directory: {target_dir}")
+                change_target = input("Use a different target directory? (y/n): ").lower()
+                if change_target == 'y':
+                    new_target = input("Enter target directory path: ").strip()
+                    if new_target:
+                        target_dir = os.path.abspath(new_target)
+            else:
+                target_dir = os.path.abspath(target_dir)
             
-            # Execute git clone command
-            result = subprocess.run(
+            # Validate target directory
+            if os.path.exists(target_dir):
+                print(f"\n[WARNING] Target directory already exists: {target_dir}")
+                
+                # Check if it's already a Git repository
+                is_git_repo = False
+                try:
+                    git_check = subprocess.run(
+                        ['git', '-C', target_dir, 'rev-parse', '--is-inside-work-tree'],
+                        capture_output=True, text=True, check=False
+                    )
+                    is_git_repo = (git_check.returncode == 0 and git_check.stdout.strip() == 'true')
+                except Exception:
+                    is_git_repo = False
+                
+                if is_git_repo:
+                    print("[INFO] The target directory is already a Git repository.")
+                    
+                    # Compare with the remote URL
+                    try:
+                        remote_check = subprocess.run(
+                            ['git', '-C', target_dir, 'config', '--get', 'remote.origin.url'],
+                            capture_output=True, text=True, check=False
+                        )
+                        
+                        if remote_check.returncode == 0:
+                            current_remote = remote_check.stdout.strip()
+                            print(f"Current remote URL: {current_remote}")
+                            
+                            if current_remote == repo_url or repo_url in current_remote or current_remote in repo_url:
+                                print("[INFO] This appears to be the same repository.")
+                                action = input("What would you like to do? (pull/overwrite/cancel): ").lower()
+                                
+                                if action == 'pull':
+                                    print("\n--------- Pulling Latest Changes ---------")
+                                    pull_result = subprocess.run(
+                                        ['git', '-C', target_dir, 'pull', 'origin', 'main'],
+                                        capture_output=True, text=True, check=False
+                                    )
+                                    
+                                    if pull_result.returncode == 0:
+                                        print("[SUCCESS] Repository updated successfully.")
+                                        
+                                        # Set this as the current project
+                                        self.set_project_path(target_dir)
+                                        self.save_config()
+                                        
+                                        # Continue with analysis/integration
+                                        print("\n--------- Repository Information ---------")
+                                        self._print_repo_info(target_dir)
+                                        
+                                        self._offer_integration(target_dir)
+                                        return True
+                                    else:
+                                        print(f"[ERROR] Failed to pull changes: {pull_result.stderr}")
+                                        retry = input("Would you like to overwrite instead? (y/n): ").lower()
+                                        if retry != 'y':
+                                            return False
+                                        # Fall through to overwrite
+                                elif action == 'overwrite':
+                                    # Continue to overwrite code below
+                                    pass
+                                else:
+                                    print("[INFO] Clone operation cancelled.")
+                                    return False
+                    except Exception as e:
+                        if self.debug_mode:
+                            print(f"[DEBUG] Error checking remotes: {str(e)}")
+                
+                # Overwrite existing directory
+                overwrite = input("Overwrite existing directory? (y/n): ").lower()
+                if overwrite != 'y':
+                    print("[INFO] Clone operation cancelled.")
+                    return False
+                
+                print("\n--------- Removing Existing Directory ---------")
+                print(f"Deleting {target_dir}...")
+                
+                try:
+                    shutil.rmtree(target_dir)
+                    print("[SUCCESS] Directory removed.")
+                except Exception as e:
+                    print(f"[ERROR] Failed to remove directory: {str(e)}")
+                    return False
+            
+            # Clone the repository with progress indicator
+            print("\n--------- Cloning Repository ---------")
+            print(f"Source: {repo_url}")
+            print(f"Target: {target_dir}")
+            print("This may take a moment depending on repository size...")
+            
+            # Prepare the spinning progress indicator
+            spinner = "|/-\\"
+            idx = 0
+            
+            # Start the git clone process
+            process = subprocess.Popen(
                 ['git', 'clone', repo_url, target_dir],
-                capture_output=True,
-                text=True,
-                check=False
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
             )
             
+            # Show a spinning progress indicator while waiting
+            while process.poll() is None:
+                print(f"\r[{spinner[idx % len(spinner)]}] Cloning repository...", end="")
+                idx += 1
+                time.sleep(0.1)
+            
+            # Get results
+            _, stderr = process.communicate()
+            
             # Check for errors
-            if result.returncode != 0:
-                print(f"[ERROR] Git clone failed: {result.stderr}")
+            if process.returncode != 0:
+                print(f"\n[ERROR] Git clone failed: {stderr}")
                 return False
             
-            print(f"[AI CEO] Repository cloned successfully to: {target_dir}")
+            print("\n[SUCCESS] Repository cloned successfully!")
             
             # Set the project path to the cloned repository
             self.set_project_path(target_dir)
             self.save_config()
             
-            # Analyze the newly cloned repository
-            print(f"[AI CEO] Analyzing cloned repository...")
-            missing_components = self.analyze_project()
+            # Display repository information
+            print("\n--------- Repository Information ---------")
+            self._print_repo_info(target_dir)
             
-            # Ask if user wants to integrate AI CEO
-            print("\n[AI CEO] Would you like to integrate AI CEO functionality into this project?")
-            confirm = input("Deploy AI engineers to add AI CEO capabilities? (y/n): ").lower()
-            
-            if confirm == 'y':
-                self.integrate_ai_ceo(target_dir, missing_components)
-                return True
-            else:
-                print("[INFO] Integration skipped.")
-                return True
+            # Offer AI CEO integration
+            return self._offer_integration(target_dir)
                 
         except Exception as e:
-            print(f"[ERROR] Failed to clone repository: {str(e)}")
+            print(f"\n[ERROR] Failed to clone repository: {str(e)}")
             if self.debug_mode:
                 import traceback
                 traceback.print_exc()
             return False
+    
+    def _print_repo_info(self, repo_dir):
+        """Print detailed information about a Git repository"""
+        try:
+            # Get repository statistics
+            stats = {}
+            
+            # Count files by type
+            py_files = json_files = 0
+            total_files = 0
+            
+            for root, _, files in os.walk(repo_dir):
+                if '.git' in root:  # Skip .git directory
+                    continue
+                for file in files:
+                    total_files += 1
+                    if file.endswith('.py'):
+                        py_files += 1
+                    elif file.endswith('.json'):
+                        json_files += 1
+            
+            # Get commit count
+            try:
+                commit_count = subprocess.run(
+                    ['git', '-C', repo_dir, 'rev-list', '--count', 'HEAD'],
+                    capture_output=True, text=True, check=False
+                )
+                if commit_count.returncode == 0:
+                    stats['commits'] = commit_count.stdout.strip()
+                else:
+                    stats['commits'] = "Unknown"
+            except Exception:
+                stats['commits'] = "Unknown"
+                
+            # Get current branch
+            try:
+                branch = subprocess.run(
+                    ['git', '-C', repo_dir, 'rev-parse', '--abbrev-ref', 'HEAD'],
+                    capture_output=True, text=True, check=False
+                )
+                if branch.returncode == 0:
+                    stats['branch'] = branch.stdout.strip()
+                else:
+                    stats['branch'] = "Unknown"
+            except Exception:
+                stats['branch'] = "Unknown"
+                
+            # Get last commit info
+            try:
+                last_commit = subprocess.run(
+                    ['git', '-C', repo_dir, 'log', '-1', '--pretty=format:%h - %an, %ar: %s'],
+                    capture_output=True, text=True, check=False
+                )
+                if last_commit.returncode == 0:
+                    stats['last_commit'] = last_commit.stdout.strip()
+                else:
+                    stats['last_commit'] = "Unknown"
+            except Exception:
+                stats['last_commit'] = "Unknown"
+            
+            # Print repository statistics
+            print(f"Repository directory: {repo_dir}")
+            print(f"Total files: {total_files}")
+            print(f"Python files: {py_files}")
+            print(f"JSON files: {json_files}")
+            print(f"Other files: {total_files - py_files - json_files}")
+            print(f"Commit count: {stats['commits']}")
+            print(f"Current branch: {stats['branch']}")
+            print(f"Latest commit: {stats['last_commit']}")
+            print("-------------------------------------------")
+            
+        except Exception as e:
+            print(f"[WARNING] Error getting repository info: {str(e)}")
+    
+    def _offer_integration(self, target_dir):
+        """Offer to integrate AI CEO with a repository"""
+        # Analyze the repository
+        print("\n--------- AI CEO Integration ---------")
+        print("Analyzing repository structure...")
+        missing_components = self.analyze_project()
+        
+        if missing_components:
+            print("\nThis repository needs the following AI CEO components:")
+            for component in missing_components:
+                print(f"  • {component}")
+        else:
+            print("\nThis repository already has all required AI CEO components.")
+            
+        # Ask if user wants to integrate
+        integrate = input("\nIntegrate AI CEO functionality? (y/n): ").lower()
+        if integrate == 'y':
+            self.integrate_ai_ceo(target_dir, missing_components)
+            return True
+        else:
+            print("\n[INFO] Integration skipped. You can run 'integrate' later if needed.")
+            return True
             
     def integrate_ai_ceo(self, target_dir, missing_components=None):
         """
@@ -242,29 +497,89 @@ class AICEOSystem:
             bool: True if successful, False otherwise
         """
         try:
-            print(f"[AI CEO] Integrating AI CEO system into: {target_dir}")
+            print("\n========== AI CEO INTEGRATION ==========")
+            print(f"Target directory: {target_dir}")
             
+            # Validate target directory
+            if not os.path.exists(target_dir):
+                print(f"[ERROR] Target directory does not exist: {target_dir}")
+                print("Please specify a valid project directory.")
+                return False
+                
             # If missing_components is None, analyze the project
             if missing_components is None:
+                print("Analyzing project structure...")
                 missing_components = self.analyze_project()
             
+            # Print integration plan
+            print("\n--------- Integration Plan ---------")
             if missing_components:
-                print(f"[AI CEO] Deploying AI engineers to generate: {', '.join(missing_components)}")
-                self.deploy_ai_engineers(missing_components)
+                print(f"The following components will be generated:")
+                for component in missing_components:
+                    print(f"  • {component}")
+            else:
+                print("All required components are already present.")
+                print("Only documentation will be added.")
+            print("-----------------------------------")
             
-            # Create integration file that explains the AI CEO system
+            # Confirm integration
+            confirm = input("\nProceed with integration? (y/n): ").lower()
+            if confirm != 'y':
+                print("Integration cancelled.")
+                return False
+                
+            # Deploy AI engineers to generate missing components
+            if missing_components:
+                print("\n--------- Deploying AI Engineers ---------")
+                print(f"Generating {len(missing_components)} missing components...")
+                
+                # Create a progress bar
+                for i, component in enumerate(missing_components):
+                    progress = int((i / len(missing_components)) * 20)
+                    progress_bar = "█" * progress + "░" * (20 - progress)
+                    print(f"\r[{progress_bar}] Deploying for: {component}", end="")
+                    
+                    # Actually generate the component
+                    self.deploy_ai_engineers([component])
+                    
+                    # Complete this component
+                    progress_bar = "█" * 20
+                    print(f"\r[{progress_bar}] Completed: {component}   ")
+                
+                print("\n--------------------------------------")
+            
+            # Create integration documentation
+            print("\n--------- Creating Documentation ---------")
             integration_file = os.path.join(target_dir, "ai_ceo_integration.md")
             
-            # Prepare the components list outside the f-string
+            # Prepare the components list
             if missing_components:
                 components_text = "- " + "\n- ".join(missing_components)
             else:
                 components_text = "- None (All required components were already present)"
-                
+            
+            # Get project statistics
+            py_files = 0
+            total_files = 0
+            
+            for root, _, files in os.walk(target_dir):
+                for file in files:
+                    total_files += 1
+                    if file.endswith('.py'):
+                        py_files += 1
+            
+            # Write the integration document
             with open(integration_file, 'w') as f:
                 f.write(f"""# AI CEO Integration
 
-This project has been integrated with the AI CEO Management System.
+This project has been integrated with the AI CEO Management System, providing intelligent project analysis and management capabilities.
+
+## Project Overview
+
+- Integration date: {time.strftime("%Y-%m-%d %H:%M:%S")}
+- Python files: {py_files}
+- Total files: {total_files}
+- AI CEO version: 1.0.0
 
 ## Generated Components
 
@@ -272,21 +587,59 @@ The following components were added to your project:
 
 {components_text}
 
-## Next Steps
+## Features Added
 
-1. Run the AI CEO system to analyze and optimize your project
-2. Use `python main.py` to start the AI CEO command-line interface
-3. Use the 'status' command to see the current project state
+- **Continuous Project Analysis**: AI CEO monitors your project structure and identifies missing components
+- **Virtual AI Engineering Team**: Deploy AI engineers to generate code based on project requirements
+- **Project Management**: Get insights into your project's status and structure
+- **Command-line Interface**: Interact with the AI CEO system through a comprehensive CLI
 
-Integration completed on: {time.strftime("%Y-%m-%d %H:%M:%S")}
+## Getting Started
+
+1. Run the AI CEO system to analyze and optimize your project:
+   ```
+   python main.py
+   ```
+
+2. Use the following commands to interact with AI CEO:
+   - `status` - View the current project status
+   - `analyze` - Run an analysis cycle
+   - `help` - See all available commands
+
+## Documentation
+
+For more information on how to use the AI CEO system, refer to the generated
+AI CEO components in your project directory.
+
+---
+*Integration completed on: {time.strftime("%Y-%m-%d %H:%M:%S")}*
 """)
             
-            print(f"[AI CEO] Integration completed successfully!")
-            print(f"[AI CEO] Created integration documentation: {integration_file}")
+            # Create a .aiceo configuration file
+            config_file = os.path.join(target_dir, ".aiceo")
+            with open(config_file, 'w') as f:
+                f.write(f"""# AI CEO Configuration
+integration_date={time.strftime("%Y-%m-%d %H:%M:%S")}
+integration_version=1.0.0
+components_added={len(missing_components)}
+project_dir={target_dir}
+""")
+            
+            print(f"Created documentation: {integration_file}")
+            print(f"Added configuration: {config_file}")
+            print("--------------------------------------")
+            
+            print("\n========= INTEGRATION COMPLETE =========")
+            print(f"✓ Added {len(missing_components)} AI CEO components")
+            print(f"✓ Generated documentation")
+            print(f"✓ Project is now AI CEO compatible")
+            print("\nUse 'python main.py' to start managing your project with AI CEO")
+            print("==========================================")
+            
             return True
             
         except Exception as e:
-            print(f"[ERROR] Failed to integrate AI CEO: {str(e)}")
+            print(f"\n[ERROR] Failed to integrate AI CEO: {str(e)}")
             if self.debug_mode:
                 import traceback
                 traceback.print_exc()
@@ -744,19 +1097,34 @@ class EngineeringTeam:
                 command = input("\nEnter command (or 'help'): ").strip().lower()
                 
                 if command == 'help':
-                    print("\nAvailable commands:")
-                    print("  start      - Start AI CEO system")
-                    print("  stop       - Stop AI CEO system")
-                    print("  status     - Check system status")
-                    print("  debug      - Toggle debug mode")
-                    print("  engineers  - Set number of AI engineers")
-                    print("  analyze    - Run a single analysis cycle")
-                    print("  project    - Set or view project path")
-                    print("  browse     - Browse directories and select a project folder")
+                    print("\nAI CEO Management System - Command Reference")
+                    print("=================================================")
+                    print("\nSystem Control:")
+                    print("  start      - Start AI CEO system background monitoring")
+                    print("  stop       - Stop AI CEO system monitoring")
+                    print("  status     - Check system status and project components")
+                    print("  compat     - Display platform compatibility information")
+                    print("  debug      - Toggle debug mode for verbose logging")
+                    print("  engineers  - Set number of AI engineers (1-10)")
+                    print("  exit       - Exit the application")
+                    
+                    print("\nProject Management:")
+                    print("  project    - Set or view current project path")
+                    print("  browse     - Browse directories to select a project folder")
                     print("  dialog     - Open a file dialog to select a project folder")
+                    print("  analyze    - Run a single analysis cycle on current project")
+                    
+                    print("\nDApp Integration:")
                     print("  clone      - Clone a Git repository and integrate AI CEO")
                     print("  integrate  - Integrate AI CEO into current project")
-                    print("  exit       - Exit the application")
+                    
+                    print("\nExamples:")
+                    print("  > clone                   - Interactive clone of a repository")
+                    print("  > integrate               - Add AI CEO to current project")
+                    print("  > analyze                 - Check for missing components")
+                    print("  > project set /path/to/project - Change project directory")
+                    print("  > status                  - Show system and project status")
+                    print("")
                 
                 elif command == 'start':
                     if self.running_thread and self.running_thread.is_alive():
@@ -772,18 +1140,135 @@ class EngineeringTeam:
                     self.stop()
                     
                 elif command == 'status':
+                    print("\n-------- AI CEO System Status --------")
                     if self.running_thread and self.running_thread.is_alive():
-                        print("AI CEO is running")
+                        print("Status: 🟢 Running")
                     else:
-                        print("AI CEO is stopped")
-                    print(f"Project path: {self.project_path}")
-                    print(f"Debug mode: {'Enabled' if self.debug_mode else 'Disabled'}")
+                        print("Status: 🔴 Stopped")
+                    print(f"Debug mode: {'Enabled ✓' if self.debug_mode else 'Disabled ✗'}")
                     print(f"AI Engineers: {self.ai_engineers}")
+                    print(f"Last config save: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+                    
+                    print("\n-------- Project Information --------")
+                    print(f"Project path: {self.project_path}")
+                    print(f"Path exists: {'Yes ✓' if os.path.exists(self.project_path) else 'No ✗'}")
+                    
+                    # Count files by type
+                    py_files = 0
+                    json_files = 0
+                    other_files = 0
+                    
+                    if os.path.exists(self.project_path):
+                        for root, dirs, files in os.walk(self.project_path):
+                            for file in files:
+                                if file.endswith('.py'):
+                                    py_files += 1
+                                elif file.endswith('.json'):
+                                    json_files += 1
+                                else:
+                                    other_files += 1
+                    
+                    print(f"Python files: {py_files}")
+                    print(f"JSON files: {json_files}")
+                    print(f"Other files: {other_files}")
+                    
+                    # Check for missing components
+                    print("\n-------- Component Analysis --------")
                     missing = self.analyze_project()
                     if missing:
                         print(f"Missing components: {', '.join(missing)}")
+                        print("\nRecommendation: Run the 'integrate' command to add missing components")
                     else:
-                        print("All core components are present")
+                        print("All core components are present ✓")
+                        
+                    # Git repository information
+                    print("\n-------- Git Repository Info --------")
+                    try:
+                        # Check if it's a git repository
+                        result = subprocess.run(
+                            ['git', '-C', self.project_path, 'rev-parse', '--is-inside-work-tree'],
+                            capture_output=True, text=True, check=False
+                        )
+                        
+                        if result.returncode == 0 and result.stdout.strip() == 'true':
+                            # Get remote URL
+                            remote_result = subprocess.run(
+                                ['git', '-C', self.project_path, 'config', '--get', 'remote.origin.url'],
+                                capture_output=True, text=True, check=False
+                            )
+                            remote_url = remote_result.stdout.strip() if remote_result.returncode == 0 else "Not set"
+                            
+                            # Get current branch
+                            branch_result = subprocess.run(
+                                ['git', '-C', self.project_path, 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                capture_output=True, text=True, check=False
+                            )
+                            branch = branch_result.stdout.strip() if branch_result.returncode == 0 else "Unknown"
+                            
+                            print(f"Git repository: Yes ✓")
+                            print(f"Remote origin: {remote_url}")
+                            print(f"Current branch: {branch}")
+                        else:
+                            print("Git repository: No ✗")
+                            print("Note: Initialize a Git repository to enable version control")
+                    except Exception as e:
+                        print("Git repository: Error checking")
+                        if self.debug_mode:
+                            print(f"Error details: {str(e)}")
+                    print("-----------------------------------")
+                
+                elif command == 'compat':
+                    print("\n-------- Platform Compatibility Information --------")
+                    
+                    # Operating System Information
+                    print("Operating System:")
+                    if self.os_info:
+                        system = self.os_info.get('system', 'Unknown')
+                        release = self.os_info.get('release', 'Unknown')
+                        machine = self.os_info.get('machine', 'Unknown')
+                        last_check = self.os_info.get('last_check', 'Never')
+                        print(f"  System: {system} {release}")
+                        print(f"  Architecture: {machine}")
+                        print(f"  Last check: {last_check}")
+                    else:
+                        print("  No OS information available. Start AI CEO to gather data.")
+                    
+                    # UI Toolkit Information
+                    print("\nUI Toolkit Compatibility:")
+                    if self.ui_info:
+                        toolkits = self.ui_info.get('available_toolkits', {})
+                        preferred = self.ui_info.get('preferred_toolkit', 'Unknown')
+                        
+                        print(f"  Kivy: {'Available ✓' if toolkits.get('kivy', False) else 'Not available ✗'}")
+                        print(f"  Tkinter: {'Available ✓' if toolkits.get('tkinter', False) else 'Not available ✗'}")
+                        print(f"  Terminal: {'Available ✓' if toolkits.get('terminal', True) else 'Not available ✗'}")
+                        print(f"  Preferred toolkit: {preferred}")
+                    else:
+                        print("  No UI information available. Start AI CEO to gather data.")
+                    
+                    # Networking Information
+                    print("\nNetwork Compatibility:")
+                    if self.network_info:
+                        internet = 'Available ✓' if self.network_info.get('internet_available', False) else 'Limited ✗'
+                        print(f"  Internet connectivity: {internet}")
+                    else:
+                        print("  No network information available. Start AI CEO to gather data.")
+                    
+                    # Performance Information
+                    print("\nPerformance Optimization:")
+                    if self.performance_info:
+                        cpu_count = self.performance_info.get('cpu_count', 'Unknown')
+                        recommended = self.performance_info.get('recommended_engineers', 5)
+                        print(f"  CPU cores: {cpu_count}")
+                        print(f"  Recommended engineers: {recommended}")
+                        print(f"  Current engineers: {self.ai_engineers}")
+                        
+                        if self.ai_engineers < recommended:
+                            print(f"  Recommendation: Increase engineers to {recommended} for optimal performance")
+                    else:
+                        print("  No performance information available. Start AI CEO to gather data.")
+                    
+                    print("---------------------------------------------------")
                 
                 elif command == 'debug':
                     self.debug_mode = not self.debug_mode
@@ -994,6 +1479,140 @@ class EngineeringTeam:
                 import traceback
                 traceback.print_exc()
 
-if __name__ == '__main__':
+def run_gui_mode():
+    """Run the AI CEO System in GUI mode using Kivy"""
+    try:
+        # We import here to avoid Kivy initialization when running in CLI mode
+        from ai_ceo_ui import AICEOApp
+        app = AICEOApp()
+        app.run()
+    except ImportError as e:
+        print(f"Error loading GUI: {str(e)}")
+        print("Make sure Kivy is installed correctly.")
+        print("Falling back to command-line interface.")
+        run_cli_mode()
+    except Exception as e:
+        print(f"Error starting GUI: {str(e)}")
+        print("Falling back to command-line interface.")
+        run_cli_mode()
+
+def run_cli_mode():
+    """Run the AI CEO System in command-line interface mode"""
     ai_ceo_system = AICEOSystem()
     ai_ceo_system.start()
+
+def show_compatibility_info():
+    """Display system compatibility information non-interactively"""
+    system = AICEOSystem()
+    
+    # Run a single improvement cycle to gather data
+    improvement = ContinuousImprovement(system.CONFIG_FILE, system.debug_mode)
+    improvement.check_platform_compatibility()
+    improvement.check_ui_compatibility()
+    improvement.check_networking_compatibility()
+    improvement.check_performance_optimization()
+    improvement.check_security_enhancements()
+    improvement.save_config()  # Save the gathered data
+    
+    # Copy the gathered data directly to system
+    system.os_info = improvement.os_info
+    system.ui_info = improvement.ui_info
+    system.network_info = improvement.network_info 
+    system.performance_info = improvement.performance_info
+    
+    # Display compatibility information
+    print("\n-------- Platform Compatibility Information --------")
+    
+    # Operating System Information
+    print("Operating System:")
+    if system.os_info:
+        system_name = system.os_info.get('system', 'Unknown')
+        release = system.os_info.get('release', 'Unknown')
+        machine = system.os_info.get('machine', 'Unknown')
+        last_check = system.os_info.get('last_check', 'Never')
+        print(f"  System: {system_name} {release}")
+        print(f"  Architecture: {machine}")
+        print(f"  Last check: {last_check}")
+    else:
+        print("  No OS information available.")
+    
+    # UI Toolkit Information
+    print("\nUI Toolkit Compatibility:")
+    if system.ui_info:
+        toolkits = system.ui_info.get('available_toolkits', {})
+        preferred = system.ui_info.get('preferred_toolkit', 'Unknown')
+        
+        print(f"  Kivy: {'Available ✓' if toolkits.get('kivy', False) else 'Not available ✗'}")
+        print(f"  Tkinter: {'Available ✓' if toolkits.get('tkinter', False) else 'Not available ✗'}")
+        print(f"  Terminal: {'Available ✓' if toolkits.get('terminal', True) else 'Not available ✗'}")
+        print(f"  Preferred toolkit: {preferred}")
+    else:
+        print("  No UI information available.")
+    
+    # Networking Information
+    print("\nNetwork Compatibility:")
+    if system.network_info:
+        internet = 'Available ✓' if system.network_info.get('internet_available', False) else 'Limited ✗'
+        print(f"  Internet connectivity: {internet}")
+    else:
+        print("  No network information available.")
+    
+    # Performance Information
+    print("\nPerformance Optimization:")
+    if system.performance_info:
+        cpu_count = system.performance_info.get('cpu_count', 'Unknown')
+        recommended = system.performance_info.get('recommended_engineers', 5)
+        print(f"  CPU cores: {cpu_count}")
+        print(f"  Recommended engineers: {recommended}")
+        print(f"  Current engineers: {system.ai_engineers}")
+        
+        if system.ai_engineers < recommended:
+            print(f"  Recommendation: Increase engineers to {recommended} for optimal performance")
+    else:
+        print("  No performance information available.")
+    
+    print("---------------------------------------------------")
+
+if __name__ == '__main__':
+    # Check if command-line args specify a mode
+    import sys
+    
+    # We need to handle Kivy's command line arguments
+    # Set KIVY_NO_ARGS=1 in the environment to disable Kivy's argument parser
+    os.environ['KIVY_NO_ARGS'] = '1'
+    
+    # Now check for our own arguments
+    use_cli = False
+    use_gui = False
+    test_compat = False
+    
+    # Process command line arguments
+    for arg in sys.argv[1:]:
+        if arg.lower() == 'cli':
+            use_cli = True
+        elif arg.lower() == 'gui':
+            use_gui = True
+        elif arg.lower() == 'compat':
+            test_compat = True
+    
+    if test_compat:
+        # Just run the compatibility check and exit
+        show_compatibility_info()
+    elif use_cli:
+        # Explicitly requested CLI mode
+        print("Starting AI CEO in command-line mode")
+        run_cli_mode()
+    elif use_gui:
+        # Explicitly requested GUI mode
+        print("Starting AI CEO in graphical mode")
+        run_gui_mode()
+    else:
+        # Try GUI mode by default, fallback to CLI
+        try:
+            # Test if Kivy is available
+            import kivy
+            print("Starting AI CEO in graphical mode (default)")
+            run_gui_mode()
+        except ImportError:
+            print("Kivy not available. Starting in command-line mode")
+            run_cli_mode()
