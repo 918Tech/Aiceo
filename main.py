@@ -42,6 +42,11 @@ class AICEOSystem:
                     self.debug_mode = config.get("debug_mode", True)
                     self.ceo_logic = config.get("ceo_logic", {})
                     self.ai_engineers = config.get("ai_engineers", 5)
+                    
+                    # Load project path if it exists in the config
+                    saved_path = config.get("project_path", "")
+                    if saved_path and os.path.exists(saved_path):
+                        self.project_path = saved_path
             else:
                 self.save_config()
         except Exception as e:
@@ -54,7 +59,8 @@ class AICEOSystem:
                 "task_queue": self.task_queue,
                 "debug_mode": self.debug_mode,
                 "ceo_logic": self.ceo_logic,
-                "ai_engineers": self.ai_engineers
+                "ai_engineers": self.ai_engineers,
+                "project_path": self.project_path  # Save the project path
             }
             with open(self.CONFIG_FILE, 'w') as f:
                 json.dump(config_data, f, indent=4)
@@ -601,6 +607,8 @@ class EngineeringTeam:
                     print("  debug      - Toggle debug mode")
                     print("  engineers  - Set number of AI engineers")
                     print("  analyze    - Run a single analysis cycle")
+                    print("  project    - Set or view project path")
+                    print("  browse     - Browse directories and select a project folder")
                     print("  exit       - Exit the application")
                 
                 elif command == 'start':
@@ -655,6 +663,26 @@ class EngineeringTeam:
                     else:
                         print("All core components are present")
                 
+                elif command == 'project':
+                    action = input("Enter 'set' to change project path or 'view' to see current path: ").strip().lower()
+                    
+                    if action == 'view':
+                        print(f"Current project path: {self.project_path}")
+                        
+                    elif action == 'set':
+                        new_path = input("Enter the full path to the project folder: ").strip()
+                        if new_path:
+                            if self.set_project_path(new_path):
+                                print(f"Project path updated to: {self.project_path}")
+                                self.save_config()
+                        else:
+                            print("No path provided. Project path not changed.")
+                    else:
+                        print(f"Unknown action: '{action}'. Use 'set' or 'view'.")
+                
+                elif command == 'browse':
+                    self._browse_directories()
+                
                 elif command == 'exit':
                     if self.running_thread and self.running_thread.is_alive():
                         print("Stopping AI CEO before exit...")
@@ -672,6 +700,86 @@ class EngineeringTeam:
                 if self.debug_mode:
                     import traceback
                     traceback.print_exc()
+    
+    def _browse_directories(self):
+        """Interactive directory browser to select a project folder"""
+        current_dir = os.getcwd()
+        
+        while True:
+            print(f"\nCurrent directory: {current_dir}")
+            print("\nContents:")
+            
+            try:
+                # Get directories and files
+                items = os.listdir(current_dir)
+                dirs = [d for d in items if os.path.isdir(os.path.join(current_dir, d))]
+                files = [f for f in items if os.path.isfile(os.path.join(current_dir, f))]
+                
+                # Display directories
+                print("\nDirectories:")
+                for i, d in enumerate(dirs):
+                    print(f"  {i+1}. {d}/")
+                
+                # Display files (only Python, JSON, and text files)
+                py_files = [f for f in files if f.endswith(('.py', '.json', '.txt'))]
+                if py_files:
+                    print("\nRelevant Files:")
+                    for i, f in enumerate(py_files):
+                        print(f"  {len(dirs)+i+1}. {f}")
+                
+                # Show options
+                print("\nOptions:")
+                print("  0. Select current directory as project")
+                print("  p. Go to parent directory")
+                print("  c. Cancel browsing")
+                
+                # Get user choice
+                choice = input("\nEnter your choice: ").strip()
+                
+                if choice == '0':
+                    # Select current directory
+                    if self.set_project_path(current_dir):
+                        print(f"Project path set to: {current_dir}")
+                        self.save_config()
+                    return
+                
+                elif choice == 'p':
+                    # Go to parent directory
+                    parent = os.path.dirname(current_dir)
+                    if parent != current_dir:  # Avoid getting stuck at root
+                        current_dir = parent
+                    else:
+                        print("Already at root directory.")
+                
+                elif choice == 'c':
+                    # Cancel browsing
+                    print("Directory browsing cancelled.")
+                    return
+                
+                elif choice.isdigit():
+                    idx = int(choice) - 1
+                    if 0 <= idx < len(dirs):
+                        # Navigate to subdirectory
+                        current_dir = os.path.join(current_dir, dirs[idx])
+                    elif len(dirs) <= idx < len(dirs) + len(py_files):
+                        # Selected a file - treat its directory as the project
+                        file_dir = os.path.dirname(os.path.join(current_dir, py_files[idx - len(dirs)]))
+                        if self.set_project_path(file_dir):
+                            print(f"Project path set to: {file_dir}")
+                            self.save_config()
+                        return
+                    else:
+                        print("Invalid selection.")
+                
+                else:
+                    print("Invalid choice.")
+            
+            except Exception as e:
+                print(f"Error browsing directory: {str(e)}")
+                if self.debug_mode:
+                    import traceback
+                    traceback.print_exc()
+                return
 
 if __name__ == '__main__':
     ai_ceo_system = AICEOSystem()
