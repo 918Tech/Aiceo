@@ -509,8 +509,7 @@ class SignupScreen(BaseScreen):
             size_hint=(0.9, None),
             height=dp(30),
             halign='left',
-            pos_hint={'center_x': 0.5},
-            margin=[0, dp(20), 0, 0]  # Add top margin
+            pos_hint={'center_x': 0.5, 'top': 0.8}  # Adjusted positioning instead of margin
         )
         form_layout.add_widget(payment_label)
         
@@ -2110,4 +2109,10 @@ class AICEOMobileApp(App):
         return sm
 
 if __name__ == '__main__':
-    AICEOMobileApp().run()
+    try:
+        print("Starting AI CEO Mobile App...")
+        AICEOMobileApp().run()
+    except Exception as e:
+        print(f"Error starting app: {str(e)}")
+        import traceback
+        traceback.print_exc()
