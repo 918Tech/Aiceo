@@ -259,6 +259,7 @@ class SubscriptionManager:
     }
     
     def __init__(self, config_file="ai_ceo_config.json", debug_mode=False):
+    self.active_subscriptions = {}  # Ensure this is initialized
         """Initialize the enhanced subscription manager"""
         self.config_file = config_file
         self.debug_mode = debug_mode
