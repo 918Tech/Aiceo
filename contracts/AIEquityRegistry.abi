@@ -1,0 +1,52 @@
+[
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "projectId",
+                "type": "uint256"
+            },
+            {
+                "name": "recipient",
+                "type": "address"
+            },
+            {
+                "name": "percentage",
+                "type": "uint256"
+            }
+        ],
+        "name": "assignEquity",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "projectId",
+                "type": "uint256"
+            }
+        ],
+        "name": "getEquityDistribution",
+        "outputs": [
+            {
+                "name": "recipients",
+                "type": "address[]"
+            },
+            {
+                "name": "percentages",
+                "type": "uint256[]"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

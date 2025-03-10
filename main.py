@@ -1,6 +1,7 @@
 """
 AI CEO Management System with AdTV dApp Integration
 918 Technologies LLC - Managed by AI CEO systems
+Founded by Matthew Blake Ward, Tulsa, Oklahoma
 """
 
 import os
@@ -10,8 +11,11 @@ import time
 import hashlib
 import random
 import string
+import uuid
 from kivy.app import App
 from datetime import datetime
+from quantum_learning import QuantumLearningSystem
+from subscription_manager import SubscriptionManager
 
 class AICEOSystem:
     """AI CEO Management System - Command Line Interface"""
@@ -30,6 +34,23 @@ class AICEOSystem:
             "platform_compatibility": {},
             "network_status": {},
             "company_name": "918 Technologies LLC",
+            "subscription": {
+                "free_trial_hours": 3,
+                "monthly_fee": 49.99,
+                "currency": "USD",
+                "equity_retention": 51,
+                "active_subscriptions": {},
+                "tax_rates": {
+                    "default": 0.0,
+                    "US": {
+                        "CA": 0.0725,
+                        "NY": 0.045,
+                        "TX": 0.0625,
+                        "FL": 0.06,
+                        "default": 0.05
+                    }
+                }
+            },
             "ownership": {
                 "founder_stake": 51,
                 "ai_ceo_stake": 49
@@ -83,6 +104,10 @@ class AICEOSystem:
         self.founder_email = "founder918tech@gmail.com"
         self.founder_access_key = "918-ACCESS-KEY"  # Default access key
         self.founder_login_timestamp = None
+        
+        # Initialize subscription manager
+        self.subscription_manager = SubscriptionManager(self.CONFIG_FILE, self.config.get('debug_mode', False))
+        self.current_user = None
         
     def _generate_access_key(self):
         """Generate a secure access key for founder login"""
@@ -388,17 +413,22 @@ class AICEOSystem:
                 
                 if cmd.lower() == 'help':
                     print("\nAvailable commands:")
-                    print("  help      - Show this help message")
-                    print("  start     - Start the AI CEO system")
-                    print("  stop      - Stop the AI CEO system")
-                    print("  status    - Check system status")
-                    print("  debug     - Toggle debug mode")
-                    print("  analyze   - Analyze current project")
-                    print("  improve   - Start self-improvement")
-                    print("  compat    - Show platform compatibility details")
-                    print("  quantum   - Show quantum learning status")
-                    print("  founder   - Access founder controls (requires authentication)")
-                    print("  exit/quit - Exit the program\n")
+                    print("  help         - Show this help message")
+                    print("  start        - Start the AI CEO system")
+                    print("  stop         - Stop the AI CEO system")
+                    print("  status       - Check system status")
+                    print("  debug        - Toggle debug mode")
+                    print("  analyze      - Analyze current project")
+                    print("  improve      - Start self-improvement")
+                    print("  compat       - Show platform compatibility details")
+                    print("  quantum      - Show quantum learning status")
+                    print("  subscribe    - Subscribe to AI CEO with 3-hour free trial")
+                    print("  trial        - Start a free 3-hour trial")
+                    print("  sub-status   - Check subscription status")
+                    print("  pricing      - Show subscription pricing information")
+                    print("  equity       - Show AI CEO equity information")
+                    print("  founder      - Access founder controls (requires authentication)")
+                    print("  exit/quit    - Exit the program\n")
                 
                 elif cmd.lower() == 'start':
                     if self.start():
@@ -455,6 +485,21 @@ class AICEOSystem:
                 elif cmd.lower() == 'adtv':
                     print("Starting AdTV application...")
                     self.run_adtv()
+                
+                elif cmd.lower() == 'pricing':
+                    self.show_subscription_pricing()
+                
+                elif cmd.lower() == 'equity':
+                    self.show_equity_info()
+                
+                elif cmd.lower() == 'trial':
+                    self.start_free_trial()
+                
+                elif cmd.lower() == 'subscribe':
+                    self.subscribe_user()
+                
+                elif cmd.lower() == 'sub-status':
+                    self.check_subscription_status()
                 
                 else:
                     print(f"Unknown command: {cmd}")

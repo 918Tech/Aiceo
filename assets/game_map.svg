@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Map background -->
+  <defs>
+    <pattern id="grid-pattern" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#203040" stroke-width="0.5" opacity="0.5"/>
+    </pattern>
+    
+    <!-- Satellite map texture -->
+    <filter id="map-texture" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="2" seed="5" result="noise"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.1 0 0 0 0 0.15 0 0 0 0 0.2 0 0 0 0.1 0" result="tint"/>
+      <feBlend in="SourceGraphic" in2="tint" mode="multiply" result="blend"/>
+    </filter>
+  </defs>
+  
+  <!-- Base map -->
+  <rect width="800" height="600" fill="#e8eef0" filter="url(#map-texture)"/>
+  <rect width="800" height="600" fill="url(#grid-pattern)"/>
+  
+  <!-- County outline -->
+  <path d="M100,100 L700,100 L750,200 L700,500 L600,550 L200,550 L50,450 L100,100 Z" 
+        fill="#d0dce0" stroke="#203040" stroke-width="3" opacity="0.7"/>
+  
+  <!-- Water features -->
+  <path d="M300,200 L500,200 L550,300 L450,350 L350,320 L300,200 Z" 
+        fill="#a0c0e0" stroke="#6080a0" stroke-width="2"/>
+  <text x="400" y="280" font-family="Arial, sans-serif" font-size="14" fill="#203040" text-anchor="middle">Lake County</text>
+  
+  <path d="M100,400 L250,420 L200,500 L100,470 Z" 
+        fill="#a0c0e0" stroke="#6080a0" stroke-width="2"/>
+  
+  <!-- Major roads -->
+  <g stroke="#606060" stroke-width="3" fill="none">
+    <path d="M100,100 L700,100" stroke="#404040" stroke-width="4"/> <!-- Interstate highway -->
+    <path d="M100,100 L50,450 L200,550" />
+    <path d="M700,100 L750,200 L700,500 L600,550" />
+    <path d="M100,100 L300,200 L550,300 L700,500" />
+    <path d="M150,300 L400,400 L600,550" />
+    <path d="M400,100 L400,400" />
+    <path d="M150,300 L300,200" />
+  </g>
+  
+  <!-- Minor roads -->
+  <g stroke="#808080" stroke-width="1.5" fill="none">
+    <path d="M200,150 L500,150 L600,250" />
+    <path d="M200,250 L450,250" />
+    <path d="M200,350 L350,350 L450,300" />
+    <path d="M300,450 L500,450" />
+    <path d="M500,300 L650,300" />
+    <path d="M250,200 L250,500" />
+    <path d="M350,150 L350,450" />
+    <path d="M500,350 L500,500" />
+    <path d="M600,150 L600,400" />
+  </g>
+  
+  <!-- Cities and towns -->
+  <g>
+    <!-- Major city -->
+    <circle cx="400" cy="400" r="15" fill="#f0f0f0" stroke="#606060" stroke-width="2"/>
+    <circle cx="400" cy="400" r="10" fill="#e0e0e0" stroke="#606060" stroke-width="1"/>
+    <text x="400" y="435" font-family="Arial, sans-serif" font-size="16" fill="#303030" text-anchor="middle" font-weight="bold">COUNTY SEAT</text>
+    
+    <!-- County jail -->
+    <rect x="390" y="380" width="20" height="20" fill="#c04040" stroke="#802020" stroke-width="1"/>
+    <rect x="395" y="385" width="4" height="10" fill="none" stroke="#ffffff" stroke-width="1"/>
+    <rect x="401" y="385" width="4" height="10" fill="none" stroke="#ffffff" stroke-width="1"/>
+    
+    <!-- Secondary cities -->
+    <circle cx="150" cy="300" r="10" fill="#f0f0f0" stroke="#606060" stroke-width="1.5"/>
+    <text x="150" cy="325" font-family="Arial, sans-serif" font-size="12" fill="#303030" text-anchor="middle">Westville</text>
+    
+    <circle cx="300" cy="200" r="10" fill="#f0f0f0" stroke="#606060" stroke-width="1.5"/>
+    <text x="300" cy="225" font-family="Arial, sans-serif" font-size="12" fill="#303030" text-anchor="middle">Northton</text>
+    
+    <circle cx="600" cy="250" r="10" fill="#f0f0f0" stroke="#606060" stroke-width="1.5"/>
+    <text x="600" cy="275" font-family="Arial, sans-serif" font-size="12" fill="#303030" text-anchor="middle">Eastbury</text>
+    
+    <circle cx="500" cy="450" r="10" fill="#f0f0f0" stroke="#606060" stroke-width="1.5"/>
+    <text x="500" cy="475" font-family="Arial, sans-serif" font-size="12" fill="#303030" text-anchor="middle">Southfield</text>
+    
+    <!-- Towns -->
+    <circle cx="250" cy="200" r="5" fill="#f0f0f0" stroke="#606060" stroke-width="1"/>
+    <circle cx="350" cy="350" r="5" fill="#f0f0f0" stroke="#606060" stroke-width="1"/>
+    <circle cx="550" cy="300" r="5" fill="#f0f0f0" stroke="#606060" stroke-width="1"/>
+    <circle cx="250" cy="500" r="5" fill="#f0f0f0" stroke="#606060" stroke-width="1"/>
+    <circle cx="650" cy="300" r="5" fill="#f0f0f0" stroke="#606060" stroke-width="1"/>
+  </g>
+  
+  <!-- Player marker -->
+  <g id="player-marker" transform="translate(300, 200)">
+    <circle cx="0" cy="0" r="8" fill="#2080ff" stroke="#104080" stroke-width="2"/>
+    <circle cx="0" cy="0" r="4" fill="#ffffff"/>
+    
+    <!-- Radar effect -->
+    <circle cx="0" cy="0" r="10" fill="none" stroke="#2080ff" stroke-width="2" opacity="0.8">
+      <animate attributeName="r" values="10;30;10" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Bounty Hunter markers -->
+  <g id="bounty-hunter-1" transform="translate(150, 300)">
+    <circle cx="0" cy="0" r="8" fill="#ff4040" stroke="#802020" stroke-width="2"/>
+    <path d="M-4,-4 L4,4 M-4,4 L4,-4" stroke="#ffffff" stroke-width="2"/>
+    
+    <!-- Search pattern -->
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#ff4040" stroke-width="1" opacity="0.3"/>
+    <circle cx="0" cy="0" r="80" fill="none" stroke="#ff4040" stroke-width="1" opacity="0.2"/>
+  </g>
+  
+  <g id="bounty-hunter-2" transform="translate(500, 450)">
+    <circle cx="0" cy="0" r="8" fill="#ff4040" stroke="#802020" stroke-width="2"/>
+    <path d="M-4,-4 L4,4 M-4,4 L4,-4" stroke="#ffffff" stroke-width="2"/>
+    
+    <!-- Search pattern -->
+    <circle cx="0" cy="0" r="40" fill="none" stroke="#ff4040" stroke-width="1" opacity="0.3"/>
+    <circle cx="0" cy="0" r="80" fill="none" stroke="#ff4040" stroke-width="1" opacity="0.2"/>
+  </g>
+  
+  <!-- Safe houses -->
+  <g>
+    <rect x="245" y="195" width="10" height="10" fill="#40c040" stroke="#206020" stroke-width="1"/>
+    <rect x="345" y="345" width="10" height="10" fill="#40c040" stroke="#206020" stroke-width="1"/>
+    <rect x="545" y="295" width="10" height="10" fill="#40c040" stroke="#206020" stroke-width="1"/>
+    <rect x="245" y="495" width="10" height="10" fill="#40c040" stroke="#206020" stroke-width="1"/>
+  </g>
+  
+  <!-- Legend -->
+  <g transform="translate(680, 450)">
+    <rect x="-70" y="-130" width="140" height="180" fill="#ffffff" fill-opacity="0.8" stroke="#404040" stroke-width="1"/>
+    <text x="0" y="-110" font-family="Arial, sans-serif" font-size="14" fill="#000000" text-anchor="middle" font-weight="bold">LEGEND</text>
+    
+    <circle cx="-50" cy="-90" r="6" fill="#2080ff" stroke="#104080" stroke-width="1.5"/>
+    <text x="-30" y="-85" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">Bail Jumper</text>
+    
+    <circle cx="-50" cy="-65" r="6" fill="#ff4040" stroke="#802020" stroke-width="1.5"/>
+    <text x="-30" y="-60" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">Bounty Hunter</text>
+    
+    <rect x="-56" y="-46" width="12" height="12" fill="#c04040" stroke="#802020" stroke-width="1"/>
+    <text x="-30" y="-35" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">County Jail</text>
+    
+    <rect x="-56" y="-21" width="12" height="12" fill="#40c040" stroke="#206020" stroke-width="1"/>
+    <text x="-30" y="-10" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">Safe House</text>
+    
+    <path d="M-56,10 L-44,10" stroke="#404040" stroke-width="4"/>
+    <text x="-30" y="15" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">Main Road</text>
+    
+    <path d="M-56,30 L-44,30" stroke="#808080" stroke-width="1.5"/>
+    <text x="-30" y="35" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="start">Local Road</text>
+  </g>
+  
+  <!-- Game information overlay -->
+  <g transform="translate(400, 50)">
+    <rect x="-200" y="-30" width="400" height="60" rx="10" fill="#000000" fill-opacity="0.7"/>
+    <text x="0" y="-5" font-family="Arial, sans-serif" font-size="20" fill="#ffffff" text-anchor="middle" font-weight="bold">BAIL JUMPER MODE</text>
+    <text x="0" y="20" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">ESCAPE THE COUNTY - AVOID THE T-1000 BOUNTY HUNTERS</text>
+  </g>
+  
+  <!-- Game stats -->
+  <g transform="translate(120, 50)">
+    <rect x="-80" y="-30" width="160" height="85" rx="5" fill="#000000" fill-opacity="0.7"/>
+    <text x="0" y="-10" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">TOKENS BET</text>
+    <text x="0" y="10" font-family="Arial, sans-serif" font-size="16" fill="#40c0ff" text-anchor="middle" font-weight="bold">5,000 BBGT</text>
+    <text x="0" y="30" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="middle">TIME REMAINING</text>
+    <text x="0" y="50" font-family="Arial, sans-serif" font-size="16" fill="#ffff40" text-anchor="middle" font-weight="bold">14:23</text>
+  </g>
+</svg>

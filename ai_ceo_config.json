@@ -7,6 +7,32 @@
     "platform_compatibility": {},
     "network_status": {},
     "company_name": "918 Technologies LLC",
+    "subscription": {
+        "free_trial_hours": 3,
+        "monthly_fee": 49.99,
+        "currency": "USD",
+        "equity_retention": 51,
+        "active_subscriptions": {},
+        "payment_details": {
+            "crypto_enabled": true,
+            "payment_methods": [
+                "crypto",
+                "credit_card"
+            ],
+            "eth_wallet": "0xE93480549a181cc19708277ad0cAbCB99C53eC99",
+            "founder_payment_method": "eth"
+        },
+        "tax_rates": {
+            "default": 0.0,
+            "US": {
+                "CA": 0.0725,
+                "NY": 0.045,
+                "TX": 0.0625,
+                "FL": 0.06,
+                "default": 0.05
+            }
+        }
+    },
     "ownership": {
         "founder_stake": 51,
         "ai_ceo_stake": 49
@@ -26,36 +52,88 @@
             "future_projects": 33.34
         },
         "networks": {
-            "primary": "base",
+            "primary": "ethereum",
             "secondary": [
-                "ethereum",
+                "base",
                 "polygon",
                 "arbitrum"
             ],
             "contract_addresses": {
-                "base": {
-                    "trust_contract": "0x918TECH0000000000000000000000000000000918",
-                    "token_contract": "0x918TECH0000000000000000000000000000000919",
-                    "governance_contract": "0x918TECH0000000000000000000000000000000920"
+                "ethereum": {
+                    "founder_wallet": "0xE93480549a181cc19708277ad0cAbCB99C53eC99",
+                    "reward_contract": "0x918TECH0000000000000000000000000000000918",
+                    "equity_contract": "0x918TECH0000000000000000000000000000000919",
+                    "token_contract": "0x918TECH0000000000000000000000000000000920",
+                    "bbgt_token_contract": "0x918TECH0000000000000000000000000000000921"
                 }
             }
         },
         "smart_contracts": {
-            "trust": {
-                "name": "AITrust",
+            "reward": {
+                "name": "AIRewardDistributor",
+                "type": "ERC20Distribution",
+                "description": "Smart contract that automatically distributes revenue rewards in ETH",
+                "features": [
+                    "automated_eth_distribution",
+                    "51_percent_to_founder",
+                    "transparent_ledger",
+                    "immutable_rules"
+                ],
+                "abi_path": "contracts/AIRewardDistributor.abi"
+            },
+            "equity": {
+                "name": "AIEquityRegistry",
                 "type": "ERC721",
+                "description": "Smart contract that manages equity ownership in projects",
                 "features": [
                     "founder_control",
+                    "51_percent_ai_ceo_ownership",
                     "decentralized_governance",
                     "automated_revenue_distribution"
-                ]
+                ],
+                "abi_path": "contracts/AIEquityRegistry.abi"
             },
             "token": {
                 "name": "918Token",
                 "symbol": "918T",
                 "type": "ERC20",
+                "description": "Premium tier token with higher value and exclusive features",
                 "total_supply": 918000000,
-                "decimal_places": 18
+                "decimal_places": 18,
+                "eth_conversion_ratio": 0.01,
+                "abi_path": "contracts/918Token.abi"
+            },
+            "bbgt": {
+                "name": "BBGToken",
+                "symbol": "BBGT",
+                "type": "ERC20",
+                "description": "Basic tier token for standard rewards",
+                "total_supply": 1000000000,
+                "decimal_places": 18,
+                "eth_conversion_ratio": 0.001,
+                "abi_path": "contracts/BBGToken.abi"
+            }
+        },
+        "reward_tokens": {
+            "tiers": {
+                "basic": {
+                    "symbol": "BBGT",
+                    "contract": "bbgt_token_contract",
+                    "min_eth_value": 0,
+                    "max_eth_value": 0.05
+                },
+                "premium": {
+                    "symbol": "918T",
+                    "contract": "token_contract",
+                    "min_eth_value": 0.05,
+                    "max_eth_value": 10.0
+                }
+            },
+            "distribution": {
+                "subscription_rewards": "BBGT",
+                "project_equity_rewards": "918T",
+                "activity_rewards": "BBGT",
+                "referral_rewards": "918T"
             }
         }
     },
@@ -64,7 +142,7 @@
         "release": "6.2.16",
         "machine": "x86_64",
         "processor": "",
-        "last_check": "2025-03-09 22:49:19"
+        "last_check": "2025-03-10 00:15:43"
     },
     "ui_info": {
         "available_toolkits": {
@@ -73,15 +151,15 @@
             "terminal": true
         },
         "preferred_toolkit": "kivy",
-        "last_check": "2025-03-09 22:49:20"
+        "last_check": "2025-03-10 00:15:44"
     },
     "network_info": {
         "internet_available": false,
-        "last_check": "2025-03-09 22:49:21"
+        "last_check": "2025-03-10 00:15:45"
     },
     "performance_info": {
         "cpu_count": 8,
         "recommended_engineers": 7,
-        "last_check": "2025-03-09 22:49:22"
+        "last_check": "2025-03-10 00:15:46"
     }
 }

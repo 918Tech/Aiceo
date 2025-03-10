@@ -1,0 +1,8 @@
+{
+    "payments": [],
+    "stats": {
+        "total_eth_paid": 0.0,
+        "total_usd_value": 0.0,
+        "last_payment_date": null
+    }
+}

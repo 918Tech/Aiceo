@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with dark gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a20;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a1f35;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Metallic gradient for T-1000 -->
+    <linearGradient id="metal-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7a9bc6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a4c3e2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6183a7;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Reflection gradient -->
+    <linearGradient id="reflection" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#bg-gradient)"/>
+  
+  <!-- Grid overlay for map effect -->
+  <g stroke="#304860" stroke-width="0.5" opacity="0.3">
+    <!-- Horizontal grid lines -->
+    <line x1="0" y1="50" x2="800" y2="50"/>
+    <line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="150" x2="800" y2="150"/>
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="250" x2="800" y2="250"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="350" x2="800" y2="350"/>
+    <line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="0" y1="450" x2="800" y2="450"/>
+    <line x1="0" y1="500" x2="800" y2="500"/>
+    <line x1="0" y1="550" x2="800" y2="550"/>
+    
+    <!-- Vertical grid lines -->
+    <line x1="50" y1="0" x2="50" y2="600"/>
+    <line x1="100" y1="0" x2="100" y2="600"/>
+    <line x1="150" y1="0" x2="150" y2="600"/>
+    <line x1="200" y1="0" x2="200" y2="600"/>
+    <line x1="250" y1="0" x2="250" y2="600"/>
+    <line x1="300" y1="0" x2="300" y2="600"/>
+    <line x1="350" y1="0" x2="350" y2="600"/>
+    <line x1="400" y1="0" x2="400" y2="600"/>
+    <line x1="450" y1="0" x2="450" y2="600"/>
+    <line x1="500" y1="0" x2="500" y2="600"/>
+    <line x1="550" y1="0" x2="550" y2="600"/>
+    <line x1="600" y1="0" x2="600" y2="600"/>
+    <line x1="650" y1="0" x2="650" y2="600"/>
+    <line x1="700" y1="0" x2="700" y2="600"/>
+    <line x1="750" y1="0" x2="750" y2="600"/>
+  </g>
+  
+  <!-- County Map Simulation -->
+  <g stroke="#4070b0" stroke-width="2" fill="none">
+    <!-- Main roads -->
+    <path d="M50,150 L300,150 L400,250 L500,250 L700,350" />
+    <path d="M200,50 L200,400 L500,400 L500,550" />
+    <path d="M450,50 L450,200 L600,350 L600,550" />
+    <path d="M300,300 L650,300" />
+    
+    <!-- City/Region markers -->
+    <circle cx="200" cy="150" r="20" fill="#304860" opacity="0.5" />
+    <circle cx="450" cy="200" r="25" fill="#304860" opacity="0.5" />
+    <circle cx="600" cy="350" r="15" fill="#304860" opacity="0.5" />
+    <circle cx="500" cy="400" r="18" fill="#304860" opacity="0.5" />
+    
+    <!-- Current location/target marker -->
+    <circle cx="500" cy="250" r="15" fill="#f04040" opacity="0.8">
+      <animate attributeName="r" values="15;18;15" dur="2s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- T-1000 Bounty Hunter/Bondsman Figure -->
+  <g transform="translate(250, 320)">
+    <!-- T-1000 Head -->
+    <ellipse cx="0" cy="-100" rx="40" ry="50" fill="url(#metal-gradient)" />
+    <ellipse cx="0" cy="-100" rx="30" ry="40" fill="url(#metal-gradient)" opacity="0.7" />
+    
+    <!-- Metallic face features -->
+    <ellipse cx="-15" cy="-110" rx="8" ry="6" fill="#304860" />
+    <ellipse cx="15" cy="-110" rx="8" ry="6" fill="#304860" />
+    <path d="M-15,-95 C-10,-90 10,-90 15,-95" stroke="#304860" stroke-width="2" fill="none" />
+    
+    <!-- Shoulders and upper torso -->
+    <path d="M-60,-50 C-70,-60 -70,-80 -40,-80 L40,-80 C70,-80 70,-60 60,-50 Z" fill="url(#metal-gradient)" />
+    
+    <!-- Torso -->
+    <path d="M-60,-50 L-50,50 L50,50 L60,-50" fill="url(#metal-gradient)" />
+    
+    <!-- Arms -->
+    <path d="M-60,-50 L-90,20 L-80,70 L-60,50" fill="url(#metal-gradient)" />
+    <path d="M60,-50 L90,20 L80,70 L60,50" fill="url(#metal-gradient)" />
+    
+    <!-- Surface ripple effect (chrome liquid metal) -->
+    <path d="M-30,-90 C-20,-95 20,-95 30,-90" stroke="url(#reflection)" stroke-width="3" fill="none" opacity="0.5">
+      <animate attributeName="d" values="M-30,-90 C-20,-95 20,-95 30,-90; M-30,-85 C-20,-93 20,-93 30,-85; M-30,-90 C-20,-95 20,-95 30,-90" dur="3s" repeatCount="indefinite" />
+    </path>
+    <path d="M-50,-60 C-30,-65 30,-65 50,-60" stroke="url(#reflection)" stroke-width="3" fill="none" opacity="0.5">
+      <animate attributeName="d" values="M-50,-60 C-30,-65 30,-65 50,-60; M-50,-55 C-30,-63 30,-63 50,-55; M-50,-60 C-30,-65 30,-65 50,-60" dur="4s" repeatCount="indefinite" />
+    </path>
+    <path d="M-40,0 C-20,-5 20,-5 40,0" stroke="url(#reflection)" stroke-width="3" fill="none" opacity="0.5">
+      <animate attributeName="d" values="M-40,0 C-20,-5 20,-5 40,0; M-40,5 C-20,-3 20,-3 40,5; M-40,0 C-20,-5 20,-5 40,0" dur="3.5s" repeatCount="indefinite" />
+    </path>
+    
+    <!-- Badge/ID - Bounty Hunter Identifier -->
+    <rect x="-20" y="-20" width="40" height="25" rx="5" fill="#d0d0d0" />
+    <text x="0" y="-5" font-family="Arial, sans-serif" font-size="12" fill="#000000" text-anchor="middle">BONDS</text>
+    
+    <!-- Scanning effect -->
+    <rect x="-40" y="-130" width="80" height="2" fill="#30b0f0" opacity="0.7">
+      <animate attributeName="y" values="-130;80;-130" dur="3s" repeatCount="indefinite" />
+    </rect>
+  </g>
+  
+  <!-- Bounty/Bond Information Box -->
+  <g transform="translate(600, 150)">
+    <rect x="-120" y="-60" width="240" height="140" rx="10" fill="#1a2035" stroke="#4080c0" stroke-width="2" />
+    
+    <text x="0" y="-35" font-family="Arial, sans-serif" font-size="18" fill="#30b0f0" text-anchor="middle">BAIL JUMPER DETECTED</text>
+    <text x="0" y="-10" font-family="Arial, sans-serif" font-size="14" fill="#ffffff" text-anchor="middle">FUGITIVE ID: BJ-918-45721</text>
+    
+    <line x1="-100" y1="0" x2="100" y2="0" stroke="#4080c0" stroke-width="1" />
+    
+    <text x="-90" y="20" font-family="Arial, sans-serif" font-size="12" fill="#c0c0c0" text-anchor="start">BOND AMOUNT:</text>
+    <text x="90" y="20" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="end">$250,000</text>
+    
+    <text x="-90" y="40" font-family="Arial, sans-serif" font-size="12" fill="#c0c0c0" text-anchor="start">TOKENS STAKED:</text>
+    <text x="90" y="40" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" text-anchor="end">25,000 BBGT</text>
+    
+    <text x="-90" y="60" font-family="Arial, sans-serif" font-size="12" fill="#c0c0c0" text-anchor="start">PURSUIT STATUS:</text>
+    <text x="90" y="60" font-family="Arial, sans-serif" font-size="12" fill="#f04040" text-anchor="end">ACTIVE</text>
+  </g>
+  
+  <!-- Jail Indicator -->
+  <g transform="translate(500, 250)">
+    <rect x="-40" y="-20" width="80" height="60" fill="#304860" stroke="#4080c0" stroke-width="2" opacity="0.8" />
+    <rect x="-30" y="-10" width="10" height="40" fill="none" stroke="#4080c0" stroke-width="2" />
+    <rect x="-10" y="-10" width="10" height="40" fill="none" stroke="#4080c0" stroke-width="2" />
+    <rect x="10" y="-10" width="10" height="40" fill="none" stroke="#4080c0" stroke-width="2" />
+    
+    <text x="0" y="-25" font-family="Arial, sans-serif" font-size="10" fill="#ffffff" text-anchor="middle">COUNTY JAIL</text>
+  </g>
+  
+  <!-- Title and UI elements -->
+  <g transform="translate(400, 50)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="24" fill="#30b0f0" text-anchor="middle" font-weight="bold">T-1000 BAIL ENFORCEMENT</text>
+    <text x="0" y="30" font-family="Arial, sans-serif" font-size="16" fill="#ffffff" text-anchor="middle">BLOCKCHAIN BAIL BONDS - FUGITIVE TRACKER</text>
+  </g>
+  
+  <!-- Bottom UI Info -->
+  <g transform="translate(400, 570)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="14" fill="#30b0f0" text-anchor="middle">AI BONDSMAN DEPLOYED • RUNTIME: 23:45:12 • SUCCESS RATE: 99.7%</text>
+  </g>
+  
+  <!-- Scanning animation effects -->
+  <g opacity="0.2">
+    <circle cx="500" cy="250" r="50" fill="none" stroke="#4080c0" stroke-width="2">
+      <animate attributeName="r" values="50;100;50" dur="4s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.2;0;0.2" dur="4s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="500" cy="250" r="75" fill="none" stroke="#4080c0" stroke-width="2">
+      <animate attributeName="r" values="75;125;75" dur="4s" repeatCount="indefinite" />
+      <animate attributeName="opacity" values="0.2;0;0.2" dur="4s" repeatCount="indefinite" />
+    </circle>
+  </g>
+</svg>

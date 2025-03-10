@@ -31,6 +31,14 @@ args = "AI_CEO_CLI"
 task = "workflow.run"
 args = "AI_CEO_Collective"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "AI_CEO_Web_Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "AI_CEO_Web_Preview"
+
 [[workflows.workflow]]
 name = "AI_CEO_App"
 author = "agent"
@@ -88,6 +96,35 @@ task = "shell.exec"
 args = "python main.py adtv"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "AI_CEO_Web_Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python external_port_config.py"
+
+[[workflows.workflow]]
+name = "AI_CEO_Web_Preview"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python simple_preview.py"
+waitForPort = 5000
+
 [nix]
 channel = "stable-24_05"
 
@@ -97,3 +134,11 @@ run = ["sh", "-c", "python main.py"]
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
+externalPort = 3000
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
