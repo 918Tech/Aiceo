@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI CEO - Signup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #00a8ff;
+            padding-bottom: 15px;
+        }
+        .card {
+            background-color: #16213e;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .card-header {
+            background-color: #0f3460;
+            padding: 15px;
+            border-bottom: 1px solid #00a8ff;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #00a8ff;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"], 
+        input[type="email"], 
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #2a3950;
+            color: #e6e6e6;
+        }
+        .section-title {
+            margin: 25px 0 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #666;
+            color: #00a8ff;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .checkbox-container input {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .btn {
+            display: inline-block;
+            background-color: #e94560;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+            font-size: 1.1em;
+        }
+        .btn:hover {
+            background-color: #c73a54;
+        }
+        .btn-secondary {
+            background-color: #3a6ea5;
+        }
+        .btn-secondary:hover {
+            background-color: #2d5982;
+        }
+        .btn-alt {
+            background-color: #6b3a75;
+        }
+        .btn-alt:hover {
+            background-color: #51296a;
+        }
+        .or-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #666;
+        }
+        .or-divider::before {
+            margin-right: 10px;
+        }
+        .or-divider::after {
+            margin-left: 10px;
+        }
+        .note {
+            font-size: 0.8em;
+            color: #aaa;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #00a8ff;
+            padding-top: 15px;
+            font-size: 0.8em;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #00a8ff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sign Up for AI CEO</h1>
+            <p>Start your journey to AI-powered business management</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2>Registration Form</h2>
+            </div>
+            <div class="card-body">
+                <p class="highlight">3-Hour Free Trial - $49.99/month after trial</p>
+                
+                <div style="background-color: rgba(255, 215, 0, 0.1); border: 1px solid #ffd700; padding: 15px; margin: 15px 0; border-radius: 5px;">
+                    <p style="color: #ffd700; font-weight: bold; margin-top: 0;">IMPORTANT: Bail Bond Requirements</p>
+                    <p>The real-world bail bond system requires token ownership of at least 10% of the bond amount in a 918 Technologies wallet.</p>
+                    <p>This feature is <strong>not</strong> covered by the free trial and requires actual token holdings.</p>
+                </div>
+                
+                <form id="signup-form" action="/process_signup" method="post">
+                    <h3 class="section-title">PERSONAL INFORMATION</h3>
+                    
+                    <div class="form-group">
+                        <label for="full_name">Full Name</label>
+                        <input type="text" id="full_name" name="full_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required>
+                    </div>
+                    
+                    <button type="button" class="btn btn-secondary">SIGN UP WITH GOOGLE</button>
+                    
+                    <h3 class="section-title">PAYMENT INFORMATION (FOR AFTER TRIAL)</h3>
+                    
+                    <div class="form-group">
+                        <label for="card_number">Card Number</label>
+                        <input type="text" id="card_number" name="card_number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expiration">Expiration (MM/YY)</label>
+                        <input type="text" id="expiration" name="expiration">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cvc">CVC</label>
+                        <input type="text" id="cvc" name="cvc">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="billing_address">Billing Address</label>
+                        <input type="text" id="billing_address" name="billing_address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="state">State/Province</label>
+                        <input type="text" id="state" name="state">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="zip">ZIP/Postal Code</label>
+                        <input type="text" id="zip" name="zip">
+                    </div>
+                    
+                    <p class="note">Your card will not be charged until the 3-hour trial ends</p>
+                    
+                    <div class="or-divider">OR</div>
+                    
+                    <button type="button" class="btn btn-alt">PAY WITH ETH/BTC</button>
+                    
+                    <h3 class="section-title">TERMS & CONDITIONS</h3>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="equity_agreement" name="equity_agreement" required>
+                        <label for="equity_agreement">I agree to give AI CEO 51% equity in all my projects</label>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="auto_renewal" name="auto_renewal" required>
+                        <label for="auto_renewal">I agree to auto-renewal of my subscription at $49.99/month after the trial</label>
+                    </div>
+                    
+                    <button type="submit" class="btn">START FREE TRIAL</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/">← Back to Home</a>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 918 Technologies LLC - All rights reserved</p>
+            <p>Founded by Matthew Blake Ward, Tulsa, Oklahoma</p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('signup-form').addEventListener('submit', function(e) {
+            // Validate the equity agreement
+            if (!document.getElementById('equity_agreement').checked) {
+                e.preventDefault();
+                alert('You must agree to give AI CEO 51% equity to continue.');
+                return false;
+            }
+            
+            // For demo purposes, we'll prevent actual form submission and redirect to a success page
+            e.preventDefault();
+            window.location.href = '/dashboard';
+        });
+        
+        // Google signup button
+        document.querySelector('.btn-secondary').addEventListener('click', function() {
+            alert('Redirecting to Google authentication...\nNote: You will still need to provide payment info after login.');
+        });
+        
+        // Crypto payment button
+        document.querySelector('.btn-alt').addEventListener('click', function() {
+            alert('Send 0.01 ETH or 0.0005 BTC to the following address to start your subscription:\n\nETH: 0x1a2b3c4d5e6f...\nBTC: 1A2B3C4D5E6F...\n\nNote: Minimum holding of 10 BBGT tokens required for jail insurance');
+        });
+    </script>
+</body>
+</html>

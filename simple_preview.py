@@ -2,228 +2,131 @@
 AI CEO Management System - Simple Web Preview
 A dedicated web server that works with Replit's webview
 """
-from flask import Flask, render_template_string, jsonify
+from flask import Flask, render_template, jsonify, redirect, url_for, request, session
 import os
 import json
 import time
+import uuid
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates', static_folder='static')
+app.secret_key = os.urandom(24)  # For session management
 
-# HTML template for the home page
-HOME_TEMPLATE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>AI CEO Management System</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #1a1a2e;
-            color: #e6e6e6;
+# In-memory storage for demo purposes
+users = {
+    "demo@example.com": {
+        "password": "password123",
+        "name": "John Doe",
+        "tokens": {
+            "BBGT": 500,
+            "918T": 20
+        },
+        "subscription": {
+            "type": "Premium",
+            "status": "Trial",
+            "expires_at": time.time() + 10800  # 3 hours from now
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #00a8ff;
-            padding-bottom: 15px;
-        }
-        .card {
-            background-color: #16213e;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .card-header {
-            background-color: #0f3460;
-            padding: 15px;
-            border-bottom: 1px solid #00a8ff;
-        }
-        .card-body {
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #00a8ff;
-        }
-        .btn {
-            display: inline-block;
-            background-color: #e94560;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 5px;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        .btn:hover {
-            background-color: #c73a54;
-        }
-        .btn-emergency {
-            background-color: #ff0000;
-        }
-        .btn-emergency:hover {
-            background-color: #cc0000;
-        }
-        .footer {
-            text-align: center;
-            margin-top: 50px;
-            border-top: 1px solid #00a8ff;
-            padding-top: 15px;
-            font-size: 0.8em;
-        }
-        .badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-        .badge-premium {
-            background-color: #ffd700;
-            color: #000;
-        }
-        .token-info {
-            display: flex;
-            justify-content: space-between;
-        }
-        .token-box {
-            flex: 1;
-            margin: 5px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-        .token-bbgt {
-            background-color: #3a6ea5;
-        }
-        .token-918t {
-            background-color: #6b3a75;
-        }
-        .equity {
-            text-align: center;
-            font-size: 1.2em;
-            font-weight: bold;
-            margin: 20px 0;
-        }
-        .blink {
-            animation: blink-animation 1s steps(5, start) infinite;
-        }
-        @keyframes blink-animation {
-            to {
-                visibility: hidden;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>AI CEO Management System</h1>
-            <p>Founded by Matthew Blake Ward, Tulsa, Oklahoma</p>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h2>Founder's Welcome</h2>
-            </div>
-            <div class="card-body">
-                <p><em>"Have you ever got your bail money back?"</em></p>
-                <p>Welcome to an entirely new paradigm in technology and finance. The AI CEO system represents years of visionary thinking about how blockchain, artificial intelligence, and subscription services can merge to create something truly revolutionary.</p>
-                <p>Our 51% equity retention model ensures we're invested in your success, while our automated emergency bail procedures provide real-world utility for token holders.</p>
-                <p><strong><em>BBGT and 918T tokens are a new path to justice.</em></strong></p>
-                <div class="equity">
-                    AI CEO maintains 51% equity in all projects
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h2>System Features</h2>
-            </div>
-            <div class="card-body">
-                <h3>Core Components</h3>
-                <ul>
-                    <li><strong>AI Legal Team:</strong> Comprehensive legal assistance and compliance monitoring</li>
-                    <li><strong>Emergency Bail Button:</strong> Automated mugshot scraping and bail processing</li>
-                    <li><strong>Carmen Sandiego-style Game:</strong> Educational bail bonds game with dual modes</li>
-                    <li><strong>Quantum Learning:</strong> Advanced AI-powered decision making</li>
-                </ul>
-                
-                <h3>Token Economy</h3>
-                <div class="token-info">
-                    <div class="token-box token-bbgt">
-                        <h3>BBGT Token</h3>
-                        <p>0.001 ETH</p>
-                        <p>Basic Bail Guarantor Token</p>
-                        <p>10% stake rewards</p>
-                    </div>
-                    <div class="token-box token-918t">
-                        <h3>918T Token</h3>
-                        <p>0.01 ETH</p>
-                        <p>918 Technologies Token</p>
-                        <p>40% to founders</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h2>Bail Emergency System</h2>
-            </div>
-            <div class="card-body" style="text-align: center;">
-                <p>Requires 10% of total bond amount in BBGT/918T tokens for automatic bail-out</p>
-                <button class="btn btn-emergency"><span class="blink">⚠</span> I'M GOING TO JAIL <span class="blink">⚠</span></button>
-                <p><small>Press only in case of imminent arrest</small></p>
-            </div>
-        </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h2>Subscription Options</h2>
-            </div>
-            <div class="card-body">
-                <h3>Multi-tiered Subscription Model</h3>
-                <p>Starting at $49.99/month with 3-hour free trial</p>
-                <p>All plans include:</p>
-                <ul>
-                    <li>Access to emergency bail system</li>
-                    <li>AI legal assistance</li>
-                    <li>Token rewards</li>
-                    <li>Carmen Sandiego-style game</li>
-                </ul>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn">Start Free Trial</button>
-                    <button class="btn">View Premium Plans <span class="badge badge-premium">PREMIUM</span></button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p>© 2024 918 Technologies LLC - All rights reserved</p>
-            <p>Port status: Active on port 5000</p>
-        </div>
-    </div>
-</body>
-</html>
-"""
+    }
+}
+
+founders = {
+    "matthew@918technologies.com": {
+        "password": "founder123",
+        "name": "Matthew Blake Ward",
+        "role": "Founder & CEO"
+    }
+}
 
 @app.route('/')
 def index():
     """Display the home page"""
-    return render_template_string(HOME_TEMPLATE)
+    return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Handle user login"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Check if it's a founder login
+        if email in founders and founders[email]['password'] == password:
+            session['user_id'] = email
+            session['is_founder'] = True
+            return redirect(url_for('founder_dashboard'))
+            
+        # Check regular user login
+        if email in users and users[email]['password'] == password:
+            session['user_id'] = email
+            session['is_founder'] = False
+            return redirect(url_for('dashboard'))
+            
+        # Failed login
+        return render_template('login.html', error="Invalid email or password")
+        
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    """Handle user signup"""
+    if request.method == 'POST':
+        # In a real application, we would validate and save the user
+        # For demo, just redirect to dashboard
+        return redirect(url_for('dashboard'))
+        
+    return render_template('signup.html')
+
+@app.route('/dashboard')
+def dashboard():
+    """User dashboard"""
+    # Check if user is logged in
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    # Get user info
+    user_id = session['user_id']
+    if user_id in users:
+        return render_template('dashboard.html', user=users[user_id])
+    
+    # If user not found, redirect to login
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/founder-dashboard')
+def founder_dashboard():
+    """Founder dashboard"""
+    # Check if user is logged in and is a founder
+    if 'user_id' not in session or not session.get('is_founder', False):
+        return redirect(url_for('login'))
+        
+    # Get founder info
+    founder_id = session['user_id']
+    if founder_id in founders:
+        return render_template('founder_dashboard.html', founder=founders[founder_id])
+    
+    # If founder not found, redirect to login
+    session.clear()
+    return redirect(url_for('login'))
+
+@app.route('/borg-assimilation')
+def borg_assimilation():
+    """Borg-themed project creation page"""
+    return render_template('borg_assimilation.html')
+
+@app.route('/terminator-bail')
+def terminator_bail():
+    """Terminator-themed bail bonds and bounty hunting page"""
+    return render_template('terminator_bail.html')
+
+@app.route('/emergency')
+def emergency():
+    """Emergency bail button page - Terminator themed"""
+    return render_template('terminator_bail.html')
+
+@app.route('/logout')
+def logout():
+    """Handle user logout"""
+    session.clear()
+    return redirect(url_for('index'))
 
 @app.route('/api/status')
 def status():
@@ -250,115 +153,278 @@ def status():
         'timestamp': time.time()
     })
 
-@app.route('/emergency')
-def emergency():
-    """Emergency bail button page"""
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>AI CEO - Emergency Bail System</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <style>
-            body {
-                font-family: 'Arial', sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #1a1a2e;
-                color: #e6e6e6;
-                text-align: center;
-            }
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                padding: 20px;
-            }
-            h1, h2 {
-                color: #ff0000;
-            }
-            .emergency-panel {
-                background-color: #16213e;
-                border: 2px solid #ff0000;
-                border-radius: 10px;
-                padding: 20px;
-                margin: 20px 0;
-                animation: pulse 2s infinite;
-            }
-            @keyframes pulse {
-                0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
-                70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
-            }
-            .btn {
-                display: inline-block;
-                background-color: #ff0000;
-                color: white;
-                padding: 15px 30px;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 10px;
-                border: none;
-                cursor: pointer;
-                font-weight: bold;
-                font-size: 1.2em;
-                transition: background-color 0.3s;
-            }
-            .btn:hover {
-                background-color: #cc0000;
-            }
-            .token-status {
-                background-color: #0f3460;
-                padding: 15px;
-                border-radius: 10px;
-                margin: 20px 0;
-            }
-            .back-link {
-                margin-top: 30px;
-            }
-            .back-link a {
-                color: #00a8ff;
-                text-decoration: none;
-            }
-            .back-link a:hover {
-                text-decoration: underline;
-            }
-            .blink {
-                animation: blink-animation 1s steps(5, start) infinite;
-            }
-            @keyframes blink-animation {
-                to {
-                    visibility: hidden;
-                }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1><span class="blink">⚠</span> EMERGENCY BAIL SYSTEM <span class="blink">⚠</span></h1>
-            
-            <div class="emergency-panel">
-                <h2>I'M GOING TO JAIL</h2>
-                <p>This emergency system will automatically process bail using your token holdings.</p>
-                <button class="btn">ACTIVATE EMERGENCY BAIL</button>
-            </div>
-            
-            <div class="token-status">
-                <h3>Your Token Status</h3>
-                <p>BBGT Balance: 500 tokens (0.5 ETH equivalent)</p>
-                <p>918T Balance: 20 tokens (0.2 ETH equivalent)</p>
-                <p>Maximum Bail Amount: $7,000</p>
-                <p><small>Based on current token holdings and 10% requirement</small></p>
-            </div>
-            
-            <div class="back-link">
-                <a href="/">← Return to Dashboard</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """)
+@app.route('/process_signup', methods=['POST'])
+def process_signup():
+    """Handle signup form submission"""
+    # In a real app, we would validate the input and store the user information
+    return redirect(url_for('dashboard'))
+
+@app.route('/process_project', methods=['POST'])
+def process_project():
+    """Handle project creation form submission"""
+    # In a real app, we would validate the input and store the project information
+    return redirect(url_for('dashboard'))
+
+@app.route('/demo-login')
+def demo_login():
+    """Quick demo login for testing purposes"""
+    session['user_id'] = "demo@example.com"
+    session['is_founder'] = False
+    return redirect(url_for('dashboard'))
+
+@app.route('/founder-demo-login')
+def founder_demo_login():
+    """Quick demo login for founder testing"""
+    session['user_id'] = "matthew@918technologies.com"
+    session['is_founder'] = True
+    return redirect(url_for('founder_dashboard'))
+
+# Create a simple home.html template in case it doesn't exist
+@app.route('/create-templates')
+def create_templates():
+    """Create basic templates if they don't exist"""
+    if not os.path.exists('templates'):
+        os.makedirs('templates')
+    
+    if not os.path.exists('templates/home.html'):
+        with open('templates/home.html', 'w') as f:
+            f.write("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>AI CEO Management System</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #1a1a2e;
+                        color: #e6e6e6;
+                    }
+                    .container {
+                        max-width: 1000px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }
+                    .header {
+                        text-align: center;
+                        margin-bottom: 30px;
+                        border-bottom: 1px solid #00a8ff;
+                        padding-bottom: 15px;
+                    }
+                    .card {
+                        background-color: #16213e;
+                        border-radius: 10px;
+                        margin-bottom: 20px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    }
+                    .card-header {
+                        background-color: #0f3460;
+                        padding: 15px;
+                        border-bottom: 1px solid #00a8ff;
+                    }
+                    .card-body {
+                        padding: 20px;
+                    }
+                    h1, h2, h3 {
+                        color: #00a8ff;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background-color: #e94560;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 5px;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: background-color 0.3s;
+                    }
+                    .btn:hover {
+                        background-color: #c73a54;
+                    }
+                    .footer {
+                        text-align: center;
+                        margin-top: 50px;
+                        border-top: 1px solid #00a8ff;
+                        padding-top: 15px;
+                        font-size: 0.8em;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>AI CEO Management System</h1>
+                        <p>Founded by Matthew Blake Ward, Tulsa, Oklahoma</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Welcome to AI CEO</h2>
+                        </div>
+                        <div class="card-body">
+                            <p>Please login or sign up to continue.</p>
+                            <div style="text-align: center;">
+                                <a href="/login" class="btn">Login</a>
+                                <a href="/signup" class="btn">Sign Up</a>
+                                <a href="/demo-login" class="btn">Demo Mode</a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>© 2024 918 Technologies LLC - All rights reserved</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """)
+    
+    if not os.path.exists('templates/login.html'):
+        with open('templates/login.html', 'w') as f:
+            f.write("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>AI CEO - Login</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #1a1a2e;
+                        color: #e6e6e6;
+                    }
+                    .container {
+                        max-width: 500px;
+                        margin: 50px auto;
+                        padding: 20px;
+                    }
+                    .card {
+                        background-color: #16213e;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    }
+                    .card-header {
+                        background-color: #0f3460;
+                        padding: 15px;
+                        text-align: center;
+                        border-bottom: 1px solid #00a8ff;
+                    }
+                    .card-body {
+                        padding: 20px;
+                    }
+                    h1, h2, h3 {
+                        color: #00a8ff;
+                        margin-top: 0;
+                    }
+                    .form-group {
+                        margin-bottom: 15px;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 5px;
+                    }
+                    input[type="email"],
+                    input[type="password"] {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #00a8ff;
+                        border-radius: 5px;
+                        background-color: #0d1b2a;
+                        color: #e6e6e6;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background-color: #e94560;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 5px 0;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: background-color 0.3s;
+                        width: 100%;
+                    }
+                    .btn:hover {
+                        background-color: #c73a54;
+                    }
+                    .error {
+                        color: #ff6b6b;
+                        margin-bottom: 15px;
+                    }
+                    .back-link {
+                        text-align: center;
+                        margin-top: 20px;
+                    }
+                    .back-link a {
+                        color: #00a8ff;
+                        text-decoration: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Login to AI CEO</h2>
+                        </div>
+                        <div class="card-body">
+                            {% if error %}
+                            <div class="error">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" action="/login">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" id="password" name="password" required>
+                                </div>
+                                
+                                <button type="submit" class="btn">Login</button>
+                            </form>
+                            
+                            <div style="text-align: center; margin-top: 20px;">
+                                <p>Don't have an account? <a href="/signup" style="color: #00a8ff;">Sign up</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="back-link">
+                        <a href="/">← Back to Home</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """)
+    
+    return "Templates created successfully."
 
 if __name__ == '__main__':
     # Run the application on port 5000, which is the Replit standard
     print("Starting AI CEO Web Preview on port 5000...")
+    
+    # Make sure template directory exists
+    if not os.path.exists('templates'):
+        os.makedirs('templates')
+        
+    # Make sure static/images directory exists
+    if not os.path.exists('static/images'):
+        os.makedirs('static/images')
+        
     app.run(host='0.0.0.0', port=5000)

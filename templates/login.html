@@ -1,0 +1,125 @@
+
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>AI CEO - Login</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        margin: 0;
+                        padding: 0;
+                        background-color: #1a1a2e;
+                        color: #e6e6e6;
+                    }
+                    .container {
+                        max-width: 500px;
+                        margin: 50px auto;
+                        padding: 20px;
+                    }
+                    .card {
+                        background-color: #16213e;
+                        border-radius: 10px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                    }
+                    .card-header {
+                        background-color: #0f3460;
+                        padding: 15px;
+                        text-align: center;
+                        border-bottom: 1px solid #00a8ff;
+                    }
+                    .card-body {
+                        padding: 20px;
+                    }
+                    h1, h2, h3 {
+                        color: #00a8ff;
+                        margin-top: 0;
+                    }
+                    .form-group {
+                        margin-bottom: 15px;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 5px;
+                    }
+                    input[type="email"],
+                    input[type="password"] {
+                        width: 100%;
+                        padding: 10px;
+                        border: 1px solid #00a8ff;
+                        border-radius: 5px;
+                        background-color: #0d1b2a;
+                        color: #e6e6e6;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background-color: #e94560;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        margin: 5px 0;
+                        border: none;
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: background-color 0.3s;
+                        width: 100%;
+                    }
+                    .btn:hover {
+                        background-color: #c73a54;
+                    }
+                    .error {
+                        color: #ff6b6b;
+                        margin-bottom: 15px;
+                    }
+                    .back-link {
+                        text-align: center;
+                        margin-top: 20px;
+                    }
+                    .back-link a {
+                        color: #00a8ff;
+                        text-decoration: none;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Login to AI CEO</h2>
+                        </div>
+                        <div class="card-body">
+                            {% if error %}
+                            <div class="error">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" action="/login">
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="password">Password</label>
+                                    <input type="password" id="password" name="password" required>
+                                </div>
+                                
+                                <button type="submit" class="btn">Login</button>
+                            </form>
+                            
+                            <div style="text-align: center; margin-top: 20px;">
+                                <p>Don't have an account? <a href="/signup" style="color: #00a8ff;">Sign up</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="back-link">
+                        <a href="/">← Back to Home</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+            

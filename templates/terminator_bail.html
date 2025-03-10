@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI CEO - Bail Enforcement System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            background-color: #0b0b0b;
+            color: #ff3300;
+            background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+                              url('/static/images/terminator_eye.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            background-size: 100%;
+        }
+        .scan-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                180deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 2px,
+                rgba(0, 0, 0, 0) 3px,
+                rgba(0, 0, 0, 0) 4px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, 
+                                      rgba(255, 0, 0, 0), 
+                                      rgba(255, 0, 0, 0.5), 
+                                      rgba(255, 0, 0, 0));
+            opacity: 0.7;
+            z-index: 1000;
+            pointer-events: none;
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .glitch {
+            position: relative;
+            animation: glitch 1s linear infinite alternate;
+        }
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 0 rgba(255, 0, 0, 0.5), -2px 0 0 rgba(0, 255, 255, 0.5); }
+            25% { text-shadow: -2px 0 0 rgba(255, 0, 0, 0.5), 2px 0 0 rgba(0, 255, 255, 0.5); }
+            50% { text-shadow: 2px 0 0 rgba(255, 0, 0, 0.5), -2px 0 0 rgba(0, 255, 255, 0.5); }
+            75% { text-shadow: -2px 0 0 rgba(255, 0, 0, 0.5), 2px 0 0 rgba(0, 255, 255, 0.5); }
+            100% { text-shadow: 2px 0 0 rgba(255, 0, 0, 0.5), -2px 0 0 rgba(0, 255, 255, 0.5); }
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #ff3300;
+            padding-bottom: 15px;
+        }
+        .panel {
+            background-color: rgba(20, 20, 20, 0.8);
+            border: 1px solid #ff3300;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(255, 51, 0, 0.3);
+        }
+        .panel-header {
+            background-color: rgba(40, 0, 0, 0.9);
+            padding: 15px;
+            border-bottom: 1px solid #ff3300;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-body {
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #ff3300;
+            margin-top: 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .targeting-bracket {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff3300;
+            opacity: 0.7;
+        }
+        .top-left {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+        }
+        .top-right {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+        }
+        .bottom-left {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+        }
+        .bottom-right {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
+        }
+        .btn {
+            display: inline-block;
+            background-color: rgba(255, 51, 0, 0.2);
+            color: #ff3300;
+            border: 1px solid #ff3300;
+            padding: 12px 25px;
+            text-decoration: none;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        .btn:hover {
+            background-color: rgba(255, 51, 0, 0.4);
+            box-shadow: 0 0 10px #ff3300;
+        }
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn-emergency {
+            background-color: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        .form-row {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ff3300;
+        }
+        input[type="text"], 
+        input[type="date"],
+        input[type="tel"],
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ff3300;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #ff3300;
+            font-family: 'Courier New', monospace;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #ff3300;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+        .stat-box {
+            text-align: center;
+            border: 1px solid #ff3300;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .target-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .target-item {
+            padding: 15px;
+            border: 1px solid #ff3300;
+            margin-bottom: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .target-item:hover {
+            background-color: rgba(255, 51, 0, 0.1);
+        }
+        .target-item .targeting-bracket {
+            width: 10px;
+            height: 10px;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #ff3300;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: rgba(255, 51, 0, 0.5);
+            transition: width 0.5s;
+        }
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #ff3300;
+        }
+        .tab-nav-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ff3300;
+            border-bottom: none;
+            margin-right: 5px;
+            background-color: rgba(20, 20, 20, 0.8);
+        }
+        .tab-nav-item.active {
+            background-color: rgba(40, 0, 0, 0.9);
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #ff3300;
+            padding-top: 15px;
+            font-size: 0.8em;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #ff3300;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .blink {
+            animation: blink 1s steps(1) infinite;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        /* HUD elements */
+        .target-scanner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            border: 2px solid #ff3300;
+            border-radius: 50%;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        .scanner-ping {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #ff3300;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+        .scanner-sweep {
+            position: absolute;
+            width: 1px;
+            height: 75px;
+            background-color: rgba(255, 51, 0, 0.7);
+            transform-origin: bottom center;
+            animation: sweep 4s linear infinite;
+        }
+        @keyframes sweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="scan-overlay"></div>
+    <div class="scan-line"></div>
+    
+    <!-- HUD scanner element -->
+    <div class="target-scanner">
+        <div class="scanner-sweep"></div>
+        <div class="scanner-ping" style="top: 30%; left: 40%;"></div>
+        <div class="scanner-ping" style="top: 60%; left: 70%;"></div>
+        <div class="scanner-ping" style="top: 20%; left: 60%;"></div>
+    </div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="glitch">BAIL ENFORCEMENT SYSTEM</h1>
+            <p>HUMAN TERMINATION UNIT // FUGITIVE RECOVERY DIVISION</p>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>EMERGENCY BAIL ACTIVATION</h2>
+                <div>STATUS: <span class="blink">ARMED</span></div>
+            </div>
+            <div class="panel-body" style="position: relative;">
+                <!-- Targeting brackets for visual effect -->
+                <div class="targeting-bracket top-left"></div>
+                <div class="targeting-bracket top-right"></div>
+                <div class="targeting-bracket bottom-left"></div>
+                <div class="targeting-bracket bottom-right"></div>
+                
+                <div style="text-align: center;">
+                    <p>IMMEDIATE JAIL RELEASE PROTOCOL</p>
+                    <p>THIS SYSTEM WILL AUTOMATICALLY PROCESS BAIL BOND UPON ARREST DETECTION</p>
+                    
+                    <div style="background-color: rgba(255, 0, 0, 0.2); border: 1px solid #ff0000; padding: 15px; margin: 15px 0; border-radius: 5px;">
+                        <p style="color: #ff3300; font-weight: bold; margin-top: 0;">WARNING: TOKEN COVERAGE REQUIRED</p>
+                        <p>THIS FEATURE IS <span style="text-decoration: underline;">NOT</span> AVAILABLE THROUGH FREE TRIAL</p>
+                        <p>REAL BAIL PROCESSING REQUIRES ACTUAL OWNERSHIP OF TOKENS</p>
+                        <p>MINIMUM 10% OF BOND AMOUNT MUST BE HELD IN 918 TECHNOLOGIES WALLET</p>
+                    </div>
+                    
+                    <button class="btn btn-emergency btn-large">
+                        <span class="blink">⚠</span> ACTIVATE EMERGENCY BAIL <span class="blink">⚠</span>
+                    </button>
+                    <p style="font-size: 0.8em;">SYSTEM REQUIRES MINIMUM 10% COVERAGE IN TOKEN HOLDINGS</p>
+                </div>
+                
+                <div class="grid-3" style="margin-top: 30px;">
+                    <div class="stat-box">
+                        <div>BBGT BALANCE</div>
+                        <div class="stat-value">500</div>
+                        <div>0.5 ETH EQUIVALENT</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>918T BALANCE</div>
+                        <div class="stat-value">20</div>
+                        <div>0.2 ETH EQUIVALENT</div>
+                    </div>
+                    <div class="stat-box">
+                        <div>MAX BAIL COVERAGE</div>
+                        <div class="stat-value">$7,000</div>
+                        <div>BASED ON CURRENT TOKENS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>BOUNTY HUNTER MODULE</h2>
+            </div>
+            <div class="panel-body">
+                <div class="tab-nav">
+                    <div class="tab-nav-item active" data-tab="active-bounties">ACTIVE BOUNTIES</div>
+                    <div class="tab-nav-item" data-tab="bounty-search">FUGITIVE SEARCH</div>
+                    <div class="tab-nav-item" data-tab="collection-history">COLLECTION HISTORY</div>
+                </div>
+                
+                <div id="active-bounties" class="tab-content active">
+                    <h3>CURRENT TARGET LIST</h3>
+                    <p>10 ACTIVE BOUNTIES IN YOUR AREA</p>
+                    
+                    <ul class="target-list">
+                        <li class="target-item">
+                            <div class="targeting-bracket top-left"></div>
+                            <div class="targeting-bracket top-right"></div>
+                            <div class="targeting-bracket bottom-left"></div>
+                            <div class="targeting-bracket bottom-right"></div>
+                            
+                            <div class="grid-2">
+                                <div>
+                                    <strong>NAME:</strong> CARLOS RODRIGUEZ<br>
+                                    <strong>AGE:</strong> 32<br>
+                                    <strong>LAST KNOWN LOCATION:</strong> DOWNTOWN AREA<br>
+                                    <strong>WANTED FOR:</strong> FAILURE TO APPEAR - ASSAULT CHARGES
+                                </div>
+                                <div>
+                                    <strong>BAIL AMOUNT:</strong> $15,000<br>
+                                    <strong>BOUNTY REWARD:</strong> $2,250<br>
+                                    <strong>RISK LEVEL:</strong> MEDIUM<br>
+                                    <strong>PROBABILITY OF CAPTURE:</strong> 68%
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn">VIEW DETAILS</button>
+                                <button class="btn">ACCEPT MISSION</button>
+                            </div>
+                        </li>
+                        
+                        <li class="target-item">
+                            <div class="targeting-bracket top-left"></div>
+                            <div class="targeting-bracket top-right"></div>
+                            <div class="targeting-bracket bottom-left"></div>
+                            <div class="targeting-bracket bottom-right"></div>
+                            
+                            <div class="grid-2">
+                                <div>
+                                    <strong>NAME:</strong> SARAH JENKINS<br>
+                                    <strong>AGE:</strong> 28<br>
+                                    <strong>LAST KNOWN LOCATION:</strong> RIVERSIDE APARTMENTS<br>
+                                    <strong>WANTED FOR:</strong> FAILURE TO APPEAR - DRUG POSSESSION
+                                </div>
+                                <div>
+                                    <strong>BAIL AMOUNT:</strong> $5,000<br>
+                                    <strong>BOUNTY REWARD:</strong> $750<br>
+                                    <strong>RISK LEVEL:</strong> LOW<br>
+                                    <strong>PROBABILITY OF CAPTURE:</strong> 89%
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn">VIEW DETAILS</button>
+                                <button class="btn">ACCEPT MISSION</button>
+                            </div>
+                        </li>
+                        
+                        <li class="target-item">
+                            <div class="targeting-bracket top-left"></div>
+                            <div class="targeting-bracket top-right"></div>
+                            <div class="targeting-bracket bottom-left"></div>
+                            <div class="targeting-bracket bottom-right"></div>
+                            
+                            <div class="grid-2">
+                                <div>
+                                    <strong>NAME:</strong> MICHAEL THOMPSON<br>
+                                    <strong>AGE:</strong> 41<br>
+                                    <strong>LAST KNOWN LOCATION:</strong> INDUSTRIAL DISTRICT<br>
+                                    <strong>WANTED FOR:</strong> FAILURE TO APPEAR - ARMED ROBBERY
+                                </div>
+                                <div>
+                                    <strong>BAIL AMOUNT:</strong> $50,000<br>
+                                    <strong>BOUNTY REWARD:</strong> $7,500<br>
+                                    <strong>RISK LEVEL:</strong> HIGH<br>
+                                    <strong>PROBABILITY OF CAPTURE:</strong> 42%
+                                </div>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button class="btn">VIEW DETAILS</button>
+                                <button class="btn">ACCEPT MISSION</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div id="bounty-search" class="tab-content">
+                    <h3>FUGITIVE SEARCH PARAMETERS</h3>
+                    <p>LOCATE SPECIFIC TARGETS USING ENHANCED SEARCH CRITERIA</p>
+                    
+                    <form id="bounty-search-form">
+                        <div class="grid-2">
+                            <div class="form-row">
+                                <label for="defendant-name">DEFENDANT NAME:</label>
+                                <input type="text" id="defendant-name" placeholder="ENTER TARGET NAME">
+                            </div>
+                            <div class="form-row">
+                                <label for="case-number">CASE NUMBER:</label>
+                                <input type="text" id="case-number" placeholder="ENTER CASE NUMBER">
+                            </div>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="form-row">
+                                <label for="bail-min">MINIMUM BAIL AMOUNT:</label>
+                                <input type="text" id="bail-min" placeholder="ENTER MINIMUM BAIL AMOUNT">
+                            </div>
+                            <div class="form-row">
+                                <label for="bail-max">MAXIMUM BAIL AMOUNT:</label>
+                                <input type="text" id="bail-max" placeholder="ENTER MAXIMUM BAIL AMOUNT">
+                            </div>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="form-row">
+                                <label for="location">LAST KNOWN LOCATION:</label>
+                                <input type="text" id="location" placeholder="ENTER LOCATION">
+                            </div>
+                            <div class="form-row">
+                                <label for="risk-level">RISK LEVEL:</label>
+                                <select id="risk-level">
+                                    <option value="">ALL RISK LEVELS</option>
+                                    <option value="low">LOW</option>
+                                    <option value="medium">MEDIUM</option>
+                                    <option value="high">HIGH</option>
+                                    <option value="extreme">EXTREME</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-large">INITIATE TARGET SEARCH</button>
+                    </form>
+                </div>
+                
+                <div id="collection-history" class="tab-content">
+                    <h3>PREVIOUS TERMINATIONS</h3>
+                    <p>RECORD OF SUCCESSFUL TARGET ACQUISITIONS</p>
+                    
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid #ff3300;">
+                                <th style="text-align: left; padding: 10px;">DATE</th>
+                                <th style="text-align: left; padding: 10px;">TARGET</th>
+                                <th style="text-align: left; padding: 10px;">LOCATION</th>
+                                <th style="text-align: right; padding: 10px;">REWARD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255, 51, 0, 0.3);">
+                                <td style="padding: 10px;">2025-02-28</td>
+                                <td style="padding: 10px;">JAMES WILSON</td>
+                                <td style="padding: 10px;">ABANDONED WAREHOUSE</td>
+                                <td style="padding: 10px; text-align: right;">$3,750</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 51, 0, 0.3);">
+                                <td style="padding: 10px;">2025-02-15</td>
+                                <td style="padding: 10px;">LINDA MARTINEZ</td>
+                                <td style="padding: 10px;">MOTEL 6, ROOM 114</td>
+                                <td style="padding: 10px; text-align: right;">$1,200</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 51, 0, 0.3);">
+                                <td style="padding: 10px;">2025-01-30</td>
+                                <td style="padding: 10px;">ROBERT JONES</td>
+                                <td style="padding: 10px;">BUS TERMINAL</td>
+                                <td style="padding: 10px; text-align: right;">$2,500</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255, 51, 0, 0.3);">
+                                <td style="padding: 10px;">2025-01-22</td>
+                                <td style="padding: 10px;">MARIA GARCIA</td>
+                                <td style="padding: 10px;">RELATIVE'S HOUSE</td>
+                                <td style="padding: 10px; text-align: right;">$900</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" style="padding: 10px; text-align: right;"><strong>TOTAL EARNINGS:</strong></td>
+                                <td style="padding: 10px; text-align: right;"><strong>$8,350</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-header">
+                <h2>GAME MODE: CARMEN SANDIEGO</h2>
+            </div>
+            <div class="panel-body" style="position: relative;">
+                <!-- Targeting brackets for visual effect -->
+                <div class="targeting-bracket top-left"></div>
+                <div class="targeting-bracket top-right"></div>
+                <div class="targeting-bracket bottom-left"></div>
+                <div class="targeting-bracket bottom-right"></div>
+                
+                <div style="text-align: center;">
+                    <p>EDUCATIONAL BOUNTY HUNTING SIMULATION</p>
+                    <p>TRACK INTERNATIONAL FUGITIVES AND EARN REAL BBGT TOKENS</p>
+                    
+                    <div class="grid-2" style="margin: 30px 0;">
+                        <div class="stat-box">
+                            <div>CURRENT DIFFICULTY</div>
+                            <div class="stat-value">MEDIUM</div>
+                            <div>3X TOKEN MULTIPLIER</div>
+                        </div>
+                        <div class="stat-box">
+                            <div>NEXT REWARD</div>
+                            <div class="stat-value">5 BBGT</div>
+                            <div>≈ $7.50 USD</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-large">LAUNCH CARMEN SANDIEGO MODE</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/dashboard">← RETURN TO COMMAND CENTER</a>
+        </div>
+        
+        <div class="footer">
+            <p>MODEL 101 // CYBERDYNE SYSTEMS</p>
+            <p>© 2024 918 TECHNOLOGIES LLC</p>
+        </div>
+    </div>
+    
+    <script>
+        // Tab navigation
+        document.querySelectorAll('.tab-nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show clicked tab content
+                document.getElementById(this.dataset.tab).classList.add('active');
+                
+                // Update active tab indicator
+                document.querySelectorAll('.tab-nav-item').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                this.classList.add('active');
+            });
+        });
+        
+        // Emergency button functionality
+        document.querySelector('.btn-emergency').addEventListener('click', function() {
+            if (confirm('EMERGENCY BAIL PROTOCOL ACTIVATION\n\nWARNING: This should ONLY be used if you are about to be arrested.\n\nContinue with activation sequence?')) {
+                alert('EMERGENCY BAIL PROTOCOL ACTIVATED\n\nYour location is being tracked.\nJail database monitoring initiated.\nLegal team has been notified.\nBail will be processed automatically upon booking.');
+            }
+        });
+        
+        // Random scanner pings
+        setInterval(function() {
+            const pings = document.querySelectorAll('.scanner-ping');
+            pings.forEach(ping => {
+                // Randomly reposition pings
+                ping.style.top = Math.floor(Math.random() * 80) + 10 + '%';
+                ping.style.left = Math.floor(Math.random() * 80) + 10 + '%';
+            });
+        }, 4000);
+        
+        // Bounty search form handling
+        document.getElementById('bounty-search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('TARGET SEARCH INITIATED\n\nScanning databases for matching fugitives...');
+            // In a real application, this would search for targets
+        });
+    </script>
+</body>
+</html>

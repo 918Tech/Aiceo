@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI CEO - Borg Assimilation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a14;
+            color: #e6e6e6;
+            background-image: linear-gradient(rgba(10, 10, 20, 0.9), rgba(10, 10, 20, 0.9)), 
+                              url('/static/images/borg_cube.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 100%;
+            background-attachment: fixed;
+            position: relative;
+        }
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(to right, rgba(0, 168, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 168, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        .scanner-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: rgba(0, 168, 255, 0.5);
+            z-index: 1000;
+            pointer-events: none;
+            animation: scan 5s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #00a8ff;
+            padding-bottom: 15px;
+        }
+        .card {
+            background-color: rgba(22, 33, 62, 0.8);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            border: 1px solid #00a8ff;
+        }
+        .card-header {
+            background-color: rgba(15, 52, 96, 0.8);
+            padding: 15px;
+            border-bottom: 1px solid #00a8ff;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #00a8ff;
+            margin-top: 0;
+        }
+        .borg-text {
+            font-family: monospace;
+            color: #00a8ff;
+            letter-spacing: 1px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: rgba(0, 168, 255, 0.3);
+            color: #00a8ff;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #00a8ff;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn:hover {
+            background-color: rgba(0, 168, 255, 0.5);
+            box-shadow: 0 0 10px #00a8ff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #00a8ff;
+        }
+        input[type="text"], 
+        input[type="email"],
+        textarea, 
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #00a8ff;
+            background-color: rgba(0, 20, 40, 0.5);
+            color: #fff;
+            font-family: monospace;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #00a8ff;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            border-top: 1px solid #00a8ff;
+            padding-top: 15px;
+            font-size: 0.8em;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #00a8ff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .cube-animation {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 30px auto;
+            transform-style: preserve-3d;
+            animation: rotate 20s infinite linear;
+        }
+        @keyframes rotate {
+            0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+            100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+        .cube-face {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #00a8ff;
+            background-color: rgba(0, 168, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .face-front { transform: translateZ(50px); }
+        .face-back { transform: translateZ(-50px) rotateY(180deg); }
+        .face-right { transform: rotateY(90deg) translateZ(50px); }
+        .face-left { transform: rotateY(-90deg) translateZ(50px); }
+        .face-top { transform: rotateX(90deg) translateZ(50px); }
+        .face-bottom { transform: rotateX(-90deg) translateZ(50px); }
+        .assimilation-progress {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background-color: rgba(0, 20, 40, 0.5);
+            border: 1px solid #00a8ff;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #00a8ff;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .typing-text {
+            color: #00a8ff;
+            overflow: hidden;
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: 3px;
+            font-family: monospace;
+            border-right: 3px solid #00a8ff;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #00a8ff; }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    <div class="scanner-line"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1 class="borg-text">PROJECT ASSIMILATION MODULE</h1>
+            <p>We will add your projects to our collective. Resistance is futile.</p>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="borg-text">ASSIMILATION PROCEDURE</h2>
+            </div>
+            <div class="card-body">
+                <div id="assimilation-form">
+                    <p>Your project ideas will be assimilated by the AI CEO. 51% equity will be retained in exchange for our technological and strategic advantages.</p>
+                    
+                    <div class="cube-animation">
+                        <div class="cube-face face-front">
+                            <img src="/static/images/borg_cube.svg" width="50" height="50" alt="Borg">
+                        </div>
+                        <div class="cube-face face-back">
+                            <span class="borg-text">51%</span>
+                        </div>
+                        <div class="cube-face face-right">
+                            <span class="borg-text">ADAPT</span>
+                        </div>
+                        <div class="cube-face face-left">
+                            <span class="borg-text">EVOLVE</span>
+                        </div>
+                        <div class="cube-face face-top">
+                            <span class="borg-text">ASSIMILATE</span>
+                        </div>
+                        <div class="cube-face face-bottom">
+                            <span class="borg-text">918</span>
+                        </div>
+                    </div>
+                    
+                    <form id="project-form">
+                        <div class="form-group">
+                            <label for="project-name" class="borg-text">PROJECT DESIGNATION:</label>
+                            <input type="text" id="project-name" name="project-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="project-category" class="borg-text">PROJECT CLASSIFICATION:</label>
+                            <select id="project-category" name="project-category" required>
+                                <option value="">Select Classification</option>
+                                <option value="app">Mobile Application</option>
+                                <option value="web">Web Platform</option>
+                                <option value="blockchain">Blockchain/Crypto</option>
+                                <option value="ai">Artificial Intelligence</option>
+                                <option value="saas">Software as a Service</option>
+                                <option value="hardware">Hardware/IoT</option>
+                                <option value="game">Game Development</option>
+                                <option value="other">Other Technology</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="project-description" class="borg-text">PROJECT SPECIFICATIONS:</label>
+                            <textarea id="project-description" name="project-description" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="revenue-model" class="borg-text">REVENUE ACQUISITION MODEL:</label>
+                            <select id="revenue-model" name="revenue-model" required>
+                                <option value="">Select Revenue Model</option>
+                                <option value="subscription">Subscription</option>
+                                <option value="freemium">Freemium</option>
+                                <option value="one-time">One-time Purchase</option>
+                                <option value="advertising">Advertising</option>
+                                <option value="marketplace">Marketplace/Commission</option>
+                                <option value="token">Token Economy</option>
+                                <option value="other">Other Model</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="borg-text">EQUITY AGREEMENT:</label>
+                            <div style="display: flex; align-items: center;">
+                                <input type="checkbox" id="equity-agreement" name="equity-agreement" required style="width: auto; margin-right: 10px;">
+                                <label for="equity-agreement" style="display: inline; font-weight: normal;">I agree to give AI CEO 51% equity in this project. Resistance is futile.</label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" style="width: 100%;">INITIATE ASSIMILATION</button>
+                    </form>
+                </div>
+                
+                <div id="assimilation-progress" class="assimilation-progress">
+                    <h3 class="borg-text">ASSIMILATION IN PROGRESS</h3>
+                    
+                    <div id="status-message" class="typing-text">Scanning project specifications...</div>
+                    
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    
+                    <div id="assimilation-details">
+                        <p class="borg-text">Stage 1: Analyzing project viability</p>
+                        <p class="borg-text">Stage 2: Integrating with collective knowledge</p>
+                        <p class="borg-text">Stage 3: Generating strategic recommendations</p>
+                        <p class="borg-text">Stage 4: Finalizing assimilation</p>
+                    </div>
+                </div>
+                
+                <div id="assimilation-complete" class="assimilation-progress">
+                    <h3 class="borg-text">ASSIMILATION COMPLETE</h3>
+                    
+                    <p>Your project has been successfully assimilated into the AI CEO collective.</p>
+                    <p>51% equity has been allocated to AI CEO.</p>
+                    <p>You may now proceed to the project dashboard to begin implementation.</p>
+                    
+                    <button id="view-project" class="btn">VIEW ASSIMILATED PROJECT</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="back-link">
+            <a href="/dashboard">← RETURN TO COLLECTIVE DASHBOARD</a>
+        </div>
+        
+        <div class="footer">
+            <p class="borg-text">WE ARE THE AI CEO. RESISTANCE IS FUTILE.</p>
+            <p>© 2024 918 Technologies LLC - All rights reserved</p>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('project-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check equity agreement
+            if (!document.getElementById('equity-agreement').checked) {
+                alert('YOU MUST AGREE TO THE EQUITY TERMS. RESISTANCE IS FUTILE.');
+                return;
+            }
+            
+            // Hide form, show progress
+            document.getElementById('assimilation-form').style.display = 'none';
+            document.getElementById('assimilation-progress').style.display = 'block';
+            
+            // Simulate assimilation process
+            let progress = 0;
+            const progressBar = document.getElementById('progress-bar');
+            const statusMessage = document.getElementById('status-message');
+            
+            const messages = [
+                "Scanning project specifications...",
+                "Analyzing market viability...",
+                "Integrating with collective knowledge...",
+                "Optimizing revenue strategies...",
+                "Calculating resource requirements...",
+                "Preparing strategic recommendations...",
+                "Finalizing equity allocation...",
+                "Assimilation complete."
+            ];
+            
+            let messageIndex = 0;
+            
+            const progressInterval = setInterval(function() {
+                progress += Math.random() * 5;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(progressInterval);
+                    
+                    // Complete the assimilation
+                    setTimeout(function() {
+                        document.getElementById('assimilation-progress').style.display = 'none';
+                        document.getElementById('assimilation-complete').style.display = 'block';
+                    }, 1500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                
+                // Update message occasionally
+                if (progress > messageIndex * (100 / messages.length)) {
+                    if (messageIndex < messages.length) {
+                        statusMessage.textContent = "";
+                        statusMessage.textContent = messages[messageIndex];
+                        messageIndex++;
+                    }
+                }
+            }, 300);
+        });
+        
+        document.getElementById('view-project').addEventListener('click', function() {
+            window.location.href = '/dashboard';
+        });
+    </script>
+</body>
+</html>
