@@ -178,9 +178,17 @@ def index():
 
 @app.route('/download-apk')
 def download_apk():
+    from apk_builder import apk_builder
     apk_dir = 'bin'
+    
     try:
+        # Check if APK exists, if not generate it
         apk_files = [f for f in os.listdir(apk_dir) if f.endswith('.apk')]
+        if not apk_files:
+            if not apk_builder.generate_release_apk():
+                return "Failed to generate APK", 500
+            apk_files = [f for f in os.listdir(apk_dir) if f.endswith('.apk')]
+            
         if apk_files:
             return flask.send_from_directory(
                 apk_dir,

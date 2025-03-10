@@ -474,9 +474,32 @@ class SettingsPanel(TabbedPanelItem):
 
     def on_download_apk(self, instance):
         """Handle APK download button press"""
-        import webbrowser
-        webbrowser.open('http://0.0.0.0:8080/download-apk')
-        self.ai_ceo_app.console.add_message("Opening APK download link in browser", True)
+        from apk_builder import apk_builder
+        
+        # Disable button during download
+        instance.disabled = True
+        original_text = instance.text
+        instance.text = "Preparing APK..."
+        
+        def update_status(dt):
+            status = apk_builder.get_build_status()
+            if status['status'] == 'building':
+                instance.text = f"Building APK... {status['progress']}%"
+            elif status['status'] == 'success':
+                instance.text = "Download Ready"
+                instance.disabled = False
+                import webbrowser
+                webbrowser.open('http://0.0.0.0:8080/download-apk')
+                Clock.unschedule(update_status)
+                Clock.schedule_once(lambda dt: setattr(instance, 'text', original_text), 3)
+            elif status['status'] == 'failed':
+                instance.text = "Build Failed"
+                instance.disabled = False
+                Clock.unschedule(update_status)
+                Clock.schedule_once(lambda dt: setattr(instance, 'text', original_text), 3)
+        
+        Clock.schedule_interval(update_status, 0.5)
+        self.ai_ceo_app.console.add_message("Starting APK build...", True)
 
     def update_status(self, dt):
         """Update UI with current system status"""
