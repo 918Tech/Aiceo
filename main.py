@@ -428,6 +428,7 @@ class AICEOSystem:
                     print("  pricing      - Show subscription pricing information")
                     print("  equity       - Show AI CEO equity information")
                     print("  founder      - Access founder controls (requires authentication)")
+                    print("  download-apk - Download the mobile app APK")
                     print("  exit/quit    - Exit the program\n")
                 
                 elif cmd.lower() == 'start':
@@ -500,6 +501,10 @@ class AICEOSystem:
                 
                 elif cmd.lower() == 'sub-status':
                     self.check_subscription_status()
+                
+                elif cmd.lower() == 'download-apk':
+                    print("APK download available at: http://0.0.0.0:8080/download-apk")
+                    print("You can access this URL in your browser to download the mobile app.")
                 
                 else:
                     print(f"Unknown command: {cmd}")
