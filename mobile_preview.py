@@ -586,8 +586,7 @@ class SignupScreen(BaseScreen):
             size_hint=(0.9, None),
             height=dp(30),
             halign='left',
-            pos_hint={'center_x': 0.5},
-            margin=[0, dp(20), 0, 0]  # Add top margin
+            pos_hint={'center_x': 0.5, 'top': 0.95}  # Use pos_hint instead of margin
         )
         form_layout.add_widget(equity_label_header)
         
