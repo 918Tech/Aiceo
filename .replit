@@ -39,6 +39,10 @@ args = "AI_CEO_Web_Server"
 task = "workflow.run"
 args = "AI_CEO_Web_Preview"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Mobile_Preview"
+
 [[workflows.workflow]]
 name = "AI_CEO_App"
 author = "agent"
@@ -124,6 +128,20 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "python simple_preview.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Mobile_Preview"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python mobile_preview.py"
 
 [nix]
 channel = "stable-24_05"

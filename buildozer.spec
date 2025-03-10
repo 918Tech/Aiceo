@@ -1,19 +1,22 @@
 [app]
 
 # (str) Title of your application
-title = AdTV Retro
+title = AI CEO System
 
 # (str) Package name
-package.name = adtvretro
+package.name = aiceosystem
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.adtv
+package.domain = org.nineoneight
 
 # (str) Source code where the main.py live
 source.dir = .
 
 # (list) Source files to include (let empty to include all the files)
-source.include_exts = py,png,jpg,kv,atlas,json,wav
+source.include_exts = py,png,jpg,kv,atlas,json,wav,svg
+
+# (str) The main file to be used for the APK
+source.filename = mobile_preview.py
 
 # (list) List of inclusions using pattern matching
 #source.include_patterns = assets/*,images/*.png
@@ -36,7 +39,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,pillow,numpy
+requirements = python3,kivy,pillow,numpy,flask,requests,trafilatura
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
