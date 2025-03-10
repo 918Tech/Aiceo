@@ -6,7 +6,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.scrollview import ScrollView
-from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
 from kivy.uix.image import Image
 from kivy.uix.textinput import TextInput
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem
@@ -14,12 +14,30 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
-from kivy.properties import StringProperty, BooleanProperty, NumericProperty
+from kivy.properties import StringProperty, BooleanProperty, NumericProperty, ObjectProperty
 from kivy.clock import Clock
+from kivy.animation import Animation
 import os
 import json
 import time
 import threading
+import random
+
+# Try to import the theme manager
+try:
+    from theme_manager import theme_manager
+except ImportError:
+    # Create a minimal theme manager if the full one isn't available
+    class ThemeManager:
+        def get_theme_color(self, color_type):
+            colors = {
+                "primary_color": (0, 0.6, 1, 1),
+                "background_color": (0.08, 0.08, 0.15, 1),
+                "emergency_color": (0.8, 0, 0, 1)
+            }
+            return colors.get(color_type, (1, 1, 1, 1))
+            
+    theme_manager = ThemeManager()
 
 # Set default window size for desktop testing
 Window.size = (400, 700)
@@ -586,7 +604,7 @@ class SignupScreen(BaseScreen):
             size_hint=(0.9, None),
             height=dp(30),
             halign='left',
-            pos_hint={'center_x': 0.5, 'top': 0.95}  # Use pos_hint instead of margin
+            pos_hint={'center_x': 0.5, 'top': 0.95}
         )
         form_layout.add_widget(equity_label_header)
         
