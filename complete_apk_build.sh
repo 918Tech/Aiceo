@@ -34,19 +34,8 @@ pip install --upgrade pip
 echo -e "Installing required Python packages..."
 pip install buildozer cython pillow kivy==2.3.1
 
-# Check for additional packages
-echo -e "Installing buildozer dependencies..."
-if command_exists apt-get; then
-    sudo apt-get update
-    sudo apt-get install -y python3-pip build-essential git python3-dev zlib1g-dev
-elif command_exists dnf; then
-    sudo dnf install -y python3-pip gcc git python3-devel zlib-devel
-elif command_exists brew; then
-    brew install python3 git zlib
-else
-    echo -e "${YELLOW}Warning: Could not install system dependencies automatically.${NC}"
-    echo -e "Please make sure required dependencies are installed manually."
-fi
+# Skip system package installation as dependencies are managed by replit.nix
+echo -e "${GREEN}Using Replit-provided dependencies${NC}"
 
 echo -e "${GREEN}Dependencies installed successfully!${NC}"
 
