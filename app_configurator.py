@@ -19,6 +19,13 @@ DEFAULT_CONFIG = {
     "emergency_bail_limit": 7000,
     "trial_expiry": int(time.time()) + (3 * 60 * 60),  # 3 hours from now
     "founder_mode": False,
+    "active_subscriptions": {},  # Add this to fix the error
+    "user_preferences": {
+        "notifications": True,
+        "emergency_alerts": True,
+        "auto_login": False
+    },
+    "version": "1.0.0",  # Production version
     "last_update": int(time.time())
 }
 
