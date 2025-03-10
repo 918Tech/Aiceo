@@ -266,9 +266,8 @@ class SignupScreen(BaseScreen):
         )
         
         # Form layout in a scroll view
-        scroll_view = ScrollView(size_hint=(1, 0.6))
-        form_layout = BoxLayout(orientation='vertical', spacing=dp(15), size_hint=(1, None))
-        form_layout.bind(minimum_height=form_layout.setter('height'))
+        scroll_view = ScrollView(size_hint=(1, 0.6), do_scroll_x=False, do_scroll_y=True)
+        form_layout = BoxLayout(orientation='vertical', spacing=dp(15), size_hint=(1, None), height=dp(400))
         
         # Form fields
         fields = [
@@ -742,16 +741,18 @@ class DashboardScreen(BaseScreen):
         token_info.add_widget(token918_box)
         
         # Main options menu in a scrollview
-        scroll_view = ScrollView(size_hint=(1, 0.5))
-        options_layout = BoxLayout(orientation='vertical', spacing=dp(15), size_hint=(1, None))
-        options_layout.bind(minimum_height=options_layout.setter('height'))
+        scroll_view = ScrollView(size_hint=(1, 0.5), do_scroll_x=False, do_scroll_y=True)
+        options_layout = BoxLayout(orientation='vertical', spacing=dp(15), size_hint=(1, None), height=dp(650))
         
         options = [
             {"text": "EMERGENCY BAIL BUTTON", "color": (0.8, 0, 0, 1), "action": self.show_emergency},
             {"text": "AI LEGAL TEAM", "color": (0.1, 0.5, 0.9, 1), "action": self.show_legal},
             {"text": "CARMEN SANDIEGO GAME", "color": (0.6, 0.1, 0.6, 1), "action": self.show_game},
             {"text": "TOKEN STAKING", "color": (0.1, 0.6, 0.1, 1), "action": self.show_staking},
-            {"text": "PROJECT EQUITY", "color": (0.8, 0.6, 0.1, 1), "action": self.show_equity}
+            {"text": "PROJECT EQUITY", "color": (0.8, 0.6, 0.1, 1), "action": self.show_equity},
+            {"text": "QUANTUM LEARNING", "color": (0.3, 0.3, 0.8, 1), "action": self.show_emergency},
+            {"text": "NETWORK MANAGER", "color": (0.5, 0.2, 0.5, 1), "action": self.show_emergency},
+            {"text": "SMART CONTRACTS", "color": (0.7, 0.4, 0.1, 1), "action": self.show_emergency}
         ]
         
         for option in options:
