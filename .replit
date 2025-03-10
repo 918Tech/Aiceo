@@ -1,7 +1,7 @@
 modules = ["python-3.11"]
 
 [workflows]
-runButton = "Build APK"
+runButton = "Complete Build APK"
 
 [[workflows.workflow]]
 name = "Run"
@@ -151,6 +151,14 @@ author = 40346011
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "bash build_apk.sh"
+
+[[workflows.workflow]]
+name = "Complete Build APK"
+author = 40346011
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash complete_apk_build.sh"
 
 [nix]
 channel = "stable-24_05"
