@@ -1,7 +1,7 @@
 modules = ["python-3.11"]
 
 [workflows]
-runButton = "Complete Build APK"
+runButton = "Build Production APK"
 
 [[workflows.workflow]]
 name = "Run"
@@ -160,11 +160,20 @@ author = 40346011
 task = "shell.exec"
 args = "bash complete_apk_build.sh"
 
+[[workflows.workflow]]
+name = "Build Production APK"
+author = 40346011
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash complete_apk_build.sh"
+
 [nix]
 channel = "stable-24_05"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]
+build = ["sh", "-c", "python generate_assets.py && bash build_apk.sh"]
 
 [[ports]]
 localPort = 5000
