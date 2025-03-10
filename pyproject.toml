@@ -5,9 +5,11 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "beautifulsoup4>=4.13.3",
+    "flask-login>=0.6.3",
     "flask>=3.1.0",
     "kivy>=2.3.1",
     "numpy>=2.2.3",
     "requests>=2.32.3",
     "trafilatura>=2.0.0",
+    "flask-wtf>=1.2.2",
 ]

@@ -164,19 +164,42 @@ class LoginScreen(BaseScreen):
     def __init__(self, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
         
+        # For command sequence feature
+        self.command_sequence = []
+        self.expected_sequence = ['up', 'up', 'down', 'down', 'left', 'right', 'left', 'right']
+        self.founder_mode = False
+        
         layout = BoxLayout(orientation='vertical', padding=dp(20), spacing=dp(20))
         
         # Title
         title = Label(
             text="LOGIN",
             font_size=dp(24),
-            size_hint=(1, 0.2),
+            size_hint=(1, 0.15),
             color=(0, 0.7, 1, 1),
             bold=True
         )
         
+        # 918 Technologies watermark/button for founder access
+        watermark_layout = BoxLayout(
+            orientation='vertical', 
+            size_hint=(0.6, 0.1),
+            pos_hint={'center_x': 0.5}
+        )
+        
+        self.founder_watermark = Button(
+            text="918 TECHNOLOGIES",
+            font_size=dp(10),
+            size_hint=(1, 1),
+            background_color=(0.1, 0.1, 0.1, 0.3),
+            color=(0.4, 0.4, 0.4, 0.5),
+            border=(0, 0, 0, 0)
+        )
+        self.founder_watermark.bind(on_press=self.on_watermark_press)
+        watermark_layout.add_widget(self.founder_watermark)
+        
         # Form layout
-        form_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.5), spacing=dp(15))
+        form_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.4), spacing=dp(15))
         
         email_input = TextInput(
             hint_text="Email",
@@ -200,8 +223,68 @@ class LoginScreen(BaseScreen):
         form_layout.add_widget(email_input)
         form_layout.add_widget(password_input)
         
+        # Founder mode interface (initially hidden)
+        self.founder_layout = BoxLayout(
+            orientation='vertical',
+            size_hint=(0.9, 0),  # Zero height to hide initially
+            opacity=0,
+            spacing=dp(10),
+            pos_hint={'center_x': 0.5}
+        )
+        
+        founder_title = Label(
+            text="FOUNDER ACCESS",
+            font_size=dp(18),
+            color=(0.9, 0.5, 0.1, 1),
+            bold=True,
+            size_hint=(1, None),
+            height=dp(30)
+        )
+        
+        self.company_email = TextInput(
+            hint_text="Company Email (@918tech.com)",
+            multiline=False,
+            size_hint=(1, None),
+            height=dp(50),
+            disabled=True
+        )
+        
+        self.otp_input = TextInput(
+            hint_text="One-Time Password",
+            multiline=False,
+            password=True,
+            size_hint=(1, None),
+            height=dp(50),
+            disabled=True
+        )
+        
+        verify_button = Button(
+            text="VERIFY",
+            size_hint=(0.8, None),
+            height=dp(50),
+            pos_hint={'center_x': 0.5},
+            background_color=(0.9, 0.5, 0.1, 1),
+            disabled=True
+        )
+        verify_button.bind(on_press=self.verify_founder)
+        self.verify_button = verify_button
+        
+        self.message_label = Label(
+            text="",
+            font_size=dp(14),
+            color=(1, 1, 1, 1),
+            size_hint=(1, None),
+            height=dp(30)
+        )
+        
+        self.founder_layout.add_widget(founder_title)
+        self.founder_layout.add_widget(self.company_email)
+        self.founder_layout.add_widget(self.otp_input)
+        self.founder_layout.add_widget(verify_button)
+        self.founder_layout.add_widget(self.message_label)
+        
         # Button layout
-        button_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.3), spacing=dp(15))
+        button_layout = BoxLayout(orientation='vertical', size_hint=(1, 0.25), spacing=dp(15))
         
         login_button = Button(
             text="LOGIN",
@@ -211,23 +294,115 @@ class LoginScreen(BaseScreen):
         )
         login_button.bind(on_press=self.do_login)
         
+        new_user_button = Button(
+            text="NEW USER? SIGN UP",
+            size_hint=(0.8, 0.5),
+            pos_hint={'center_x': 0.5},
+            background_color=(0.1, 0.3, 0.5, 1)
+        )
+        new_user_button.bind(on_press=self.go_to_signup)
+        
+        button_layout.add_widget(login_button)
+        button_layout.add_widget(new_user_button)
+        
+        # Back button
         back_button = Button(
             text="BACK",
-            size_hint=(0.8, 0.5),
+            size_hint=(0.5, 0.1),
             pos_hint={'center_x': 0.5},
             background_color=(0.4, 0.4, 0.4, 1)
         )
         back_button.bind(on_press=self.go_back)
         
-        button_layout.add_widget(login_button)
-        button_layout.add_widget(back_button)
+        # ICO Seed Funding Prompt
+        self.ico_prompt = Label(
+            text="Join our ICO! Get BBGT tokens at early investor rates.",
+            font_size=dp(12),
+            color=(0.9, 0.7, 0.1, 1),
+            size_hint=(1, 0.1),
+            halign='center'
+        )
         
         # Add widgets to main layout
         layout.add_widget(title)
+        layout.add_widget(self.ico_prompt)
+        layout.add_widget(watermark_layout)
         layout.add_widget(form_layout)
+        layout.add_widget(self.founder_layout)
         layout.add_widget(button_layout)
+        layout.add_widget(back_button)
+        
+        # Keyboard binding for command sequence
+        Window.bind(on_key_down=self.on_key_down)
         
         self.add_widget(layout)
+        
+    def on_key_down(self, instance, keyboard, keycode, text, modifiers):
+        """Handle keyboard input for the command sequence"""
+        if self.founder_mode:
+            key_map = {
+                273: 'up',     # Up arrow
+                274: 'down',   # Down arrow
+                276: 'left',   # Left arrow
+                275: 'right'   # Right arrow
+            }
+            
+            if keycode in key_map:
+                self.command_sequence.append(key_map[keycode])
+                self.message_label.text = f"Sequence: {len(self.command_sequence)}/{len(self.expected_sequence)}"
+                
+                # Check if the sequence matches
+                if len(self.command_sequence) == len(self.expected_sequence):
+                    if self.command_sequence == self.expected_sequence:
+                        # Sequence matched, show founder login
+                        self.show_founder_login()
+                    else:
+                        self.message_label.text = "Invalid sequence. Try again."
+                    
+                    # Reset sequence regardless of match
+                    self.command_sequence = []
+                
+                return True
+        
+        return False
+    
+    def on_watermark_press(self, instance):
+        """Handle watermark button press to activate founder mode"""
+        self.founder_mode = True
+        self.founder_watermark.color = (0.9, 0.5, 0.1, 1)  # Highlight the watermark
+        self.message_label.text = "Founder mode activated.\nEnter command sequence."
+        
+        # Show founder layout
+        self.founder_layout.opacity = 1
+        self.founder_layout.size_hint = (0.9, 0.3)
+    
+    def show_founder_login(self):
+        """Show the founder login form"""
+        self.message_label.text = "Command verified.\nEnter company email for OTP."
+        self.company_email.disabled = False
+        self.otp_input.disabled = False
+        self.verify_button.disabled = False
+    
+    def verify_founder(self, instance):
+        """Verify founder credentials and one-time password"""
+        email = self.company_email.text
+        otp = self.otp_input.text
+        
+        # Simulating verification for demo
+        if email.endswith('@918tech.com') and otp:
+            self.message_label.text = "Verified. Setting up biometric auth..."
+            # In a real app, you would trigger biometric setup here
+            
+            # For demo, just proceed to dashboard after a delay
+            Clock.schedule_once(self.go_to_founder_dashboard, 2)
+        else:
+            self.message_label.text = "Invalid credentials.\nPlease try again."
+    
+    def go_to_founder_dashboard(self, dt):
+        """Go to the dashboard as a founder"""
+        # For demo purposes, we'll just proceed to regular dashboard
+        # In a real app, you would go to a special founder dashboard
+        self.manager.current = 'dashboard'
     
     def do_login(self, instance):
         """Handle login button press"""
@@ -237,6 +412,10 @@ class LoginScreen(BaseScreen):
         # Here you would normally authenticate the user
         # For demo purposes, we'll just accept any input
         self.manager.current = 'dashboard'
+    
+    def go_to_signup(self, instance):
+        """Go to signup screen"""
+        self.manager.current = 'signup'
     
     def go_back(self, instance):
         """Go back to welcome screen"""
