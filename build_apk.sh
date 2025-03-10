@@ -1,113 +1,106 @@
 
 #!/bin/bash
 
-echo "Setting up environment for production APK building..."
+# APK Builder Script for AI CEO Mobile App
+# This script builds an Android APK for the AI CEO Mobile App
+
+set -e  # Exit on error
+
+# Print colored output
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}=== AI CEO Mobile App - APK Builder ===${NC}"
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
 # Install required dependencies
+echo -e "${YELLOW}Installing required dependencies...${NC}"
 pip install --upgrade pip
-pip install buildozer cython pillow requests flask 
+pip install buildozer cython pillow
 
-# Create required directories if they don't exist
+# Check Python version
+echo -e "${YELLOW}Checking Python version...${NC}"
+python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+echo -e "Python version: ${GREEN}$python_version${NC}"
+
+# Create directories if they don't exist
+echo -e "${YELLOW}Creating necessary directories...${NC}"
 mkdir -p assets
 mkdir -p bin
 
-# Make sure all required files exist for assets
-if [ ! -d "assets" ]; then
-    echo "Creating assets directory..."
-    mkdir -p assets
+# Generate assets if needed
+echo -e "${YELLOW}Generating assets...${NC}"
+if [ -f "generate_assets.py" ]; then
+    python generate_assets.py
+else
+    echo -e "${RED}Warning: generate_assets.py not found${NC}"
 fi
 
-# Check for required files
-if [ ! -f "mobile_preview.py" ]; then
-    echo "Error: mobile_preview.py not found!"
-    exit 1
-fi
-
-# Verify buildozer.spec exists
-if [ ! -f "buildozer.spec" ]; then
-    echo "Error: buildozer.spec not found!"
-    exit 1
+# Configure app
+echo -e "${YELLOW}Configuring app...${NC}"
+if [ -f "app_configurator.py" ]; then
+    python app_configurator.py
+else
+    echo -e "${RED}Warning: app_configurator.py not found${NC}"
 fi
 
 # Make sure mobile_preview.py has no errors
-echo "Verifying mobile_preview.py..."
-python -m py_compile mobile_preview.py
-if [ $? -ne 0 ]; then
-    echo "Error in mobile_preview.py - please fix before building APK"
+echo -e "${YELLOW}Verifying mobile_preview.py...${NC}"
+if python -m py_compile mobile_preview.py; then
+    echo -e "${GREEN}mobile_preview.py verified successfully${NC}"
+else
+    echo -e "${RED}Error in mobile_preview.py - please fix before building APK${NC}"
     exit 1
 fi
 
-# Create assets if needed
-if [ ! -f "assets/tv_static.png" ] || [ ! -f "assets/tv_frame.png" ]; then
-    echo "Generating assets..."
-    if [ -f "generate_assets.py" ]; then
-        python generate_assets.py
-    else
-        echo "Copying default assets..."
-        cp -n tv_static.svg assets/ 2>/dev/null || :
-        cp -n tv_frame.svg assets/ 2>/dev/null || :
-        cp -n adtv_logo.svg assets/ 2>/dev/null || :
-        cp -n static_noise.wav assets/ 2>/dev/null || :
+# Configure theme
+echo -e "${YELLOW}Configuring app theme...${NC}"
+if [ -f "theme_manager.py" ]; then
+    echo -e "${GREEN}Theme manager found${NC}"
+else
+    echo -e "${YELLOW}Creating theme manager...${NC}"
+    if [ -f "create_theme_manager.py" ]; then
+        python create_theme_manager.py
     fi
 fi
 
-# Determine build type based on environment variable or argument
-BUILD_TYPE=${1:-"debug"}
-if [ "$BUILD_TYPE" == "release" ]; then
-    echo "Building RELEASE APK..."
-    # For release build, check if keystore exists
-    if [ ! -f "aiceo.keystore" ]; then
-        echo "No keystore found. Creating keystore for signing the release APK..."
-        keytool -genkeypair -v -keystore aiceo.keystore -alias aiceo \
-        -keyalg RSA -keysize 2048 -validity 10000 \
-        -dname "CN=AI CEO System, OU=918 Technologies, O=918 Technologies LLC, L=Tulsa, ST=Oklahoma, C=US" \
-        -storepass aiceopassword -keypass aiceopassword 2>/dev/null || \
-        echo "Could not create keystore. Using debug build instead."
-        BUILD_TYPE="debug"
-    fi
+# Update buildozer.spec if needed
+echo -e "${YELLOW}Updating buildozer.spec...${NC}"
+if ! [ -f "buildozer.spec" ]; then
+    echo -e "${YELLOW}Creating default buildozer.spec...${NC}"
+    buildozer init
 fi
+
+# Set output directory in buildozer.spec
+echo -e "${YELLOW}Setting output directory to bin/...${NC}"
+sed -i 's/# bin_dir = \.\//bin_dir = \.\/bin/g' buildozer.spec
 
 # Run buildozer to create APK
-echo "Building APK with buildozer..."
-if [ "$BUILD_TYPE" == "release" ]; then
-    buildozer -v android release
-else
-    buildozer -v android debug
-fi
+echo -e "${BLUE}Building APK...${NC}"
+buildozer -v android debug
 
 # Check if build was successful
-APK_PATH=""
-if [ "$BUILD_TYPE" == "release" ] && [ -f "bin/aiceosystem-1.0.0-arm64-v8a_armeabi-v7a-release.apk" ]; then
-    APK_PATH="bin/aiceosystem-1.0.0-arm64-v8a_armeabi-v7a-release.apk"
-elif [ -f "bin/aiceosystem-1.0.0-arm64-v8a_armeabi-v7a-debug.apk" ]; then
-    APK_PATH="bin/aiceosystem-1.0.0-arm64-v8a_armeabi-v7a-debug.apk"
-elif [ -f "bin/aiceosystem-0.1-arm64-v8a_armeabi-v7a-debug.apk" ]; then
-    APK_PATH="bin/aiceosystem-0.1-arm64-v8a_armeabi-v7a-debug.apk"
-fi
-
-if [ ! -z "$APK_PATH" ]; then
-    echo "APK build process completed successfully!"
-    echo "The APK file is available at: $APK_PATH"
-    echo "You can download it using the Files tab in Replit."
-    
-    # Calculate file size for user information
-    if [ -f "$APK_PATH" ]; then
-        filesize=$(stat -c%s "$APK_PATH" 2>/dev/null || stat -f%z "$APK_PATH" 2>/dev/null || echo "Unknown")
-        if [ "$filesize" != "Unknown" ]; then
-            echo "APK Size: $(($filesize / 1024 / 1024)) MB"
-        fi
-        
-        # Generate a QR code for easy download
-        echo "To download via QR code, share the following URL:"
-        echo "https://aiceosystem-${REPL_ID}.${REPL_OWNER}.repl.co/download/$APK_PATH"
+if [ -d "bin" ]; then
+    apk_count=$(find bin -name "*.apk" | wc -l)
+    if [ "$apk_count" -gt 0 ]; then
+        apk_file=$(find bin -name "*.apk" | head -1)
+        echo -e "${GREEN}APK build process completed successfully!${NC}"
+        echo -e "The APK file is available at: ${BLUE}$apk_file${NC}"
+        echo -e "You can download it using the Files tab in Replit."
+    else
+        echo -e "${RED}APK build failed. No APK file found in bin directory.${NC}"
+        echo -e "Check the logs for errors."
     fi
 else
-    echo "APK build failed. Check the buildozer.log file for errors."
-    
-    # Display the last few lines of the buildozer log to help diagnose issues
-    LATEST_LOG=$(find .buildozer/logs -name "buildozer-*.log" -type f -printf "%T@ %p\n" 2>/dev/null | sort -nr | head -1 | cut -d' ' -f2)
-    if [ -n "$LATEST_LOG" ] && [ -f "$LATEST_LOG" ]; then
-        echo "Last 20 lines of buildozer log:"
-        tail -n 20 "$LATEST_LOG"
-    fi
+    echo -e "${RED}APK build failed. bin directory not found.${NC}"
+    echo -e "Check the logs for errors."
 fi
+
+echo -e "${BLUE}=== Build process completed ===${NC}"

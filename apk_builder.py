@@ -1,340 +1,249 @@
 
 """
-AI CEO APK Builder - Production-ready APK build process
-Version 1.0.0
+APK Builder for AI CEO Mobile App
+Builds Android APK for the application
 """
+
 import os
 import subprocess
 import sys
-import json
 import time
-import random
+import shutil
+from app_configurator import app_configurator
 
-# Configuration Constants
-APK_VERSION = "1.0.0"
-DEBUG_MODE = False  # Set to False for production build
-
-def log(message, error=False):
-    """Log a message with timestamp"""
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+class APKBuilder:
+    """Builds Android APK for the application"""
     
-    if error:
-        print(f"[{timestamp}] ERROR: {message}", file=sys.stderr)
-    else:
-        print(f"[{timestamp}] {message}")
-
-def run_command(command, capture_output=False, check=True):
-    """Run a shell command with better error handling"""
-    try:
-        log(f"Running command: {' '.join(command)}")
-        result = subprocess.run(command, capture_output=capture_output, check=check, text=True)
-        return result
-    except subprocess.CalledProcessError as e:
-        log(f"Command failed with exit code {e.returncode}", error=True)
-        if capture_output and e.stderr:
-            log(f"Error output: {e.stderr}", error=True)
-        if check:
-            raise
-        return e
-
-def check_dependencies():
-    """Check if all required dependencies are installed"""
-    log("Checking dependencies...")
+    def __init__(self, debug=True):
+        """Initialize the APK builder"""
+        self.debug = debug
+        self.buildozer_spec = "buildozer.spec"
+        self.output_dir = "bin"
+        self.build_status = {
+            "status": "not_started",
+            "progress": 0,
+            "message": "Build not started",
+            "output_file": None
+        }
     
-    required_packages = {
-        "buildozer": "buildozer",
-        "pillow": "PIL",
-        "cython": "Cython",
-        "flask": "flask",
-        "requests": "requests"
-    }
+    def log(self, message):
+        """Log a message if debug is enabled"""
+        if self.debug:
+            print(f"[APK Builder] {message}")
     
-    missing_packages = []
-    
-    for package, import_name in required_packages.items():
+    def check_buildozer_installed(self):
+        """Check if buildozer is installed"""
         try:
-            __import__(import_name)
-        except ImportError:
-            missing_packages.append(package)
+            result = subprocess.run(
+                ["buildozer", "--version"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            if result.returncode == 0:
+                self.log(f"Buildozer is installed: {result.stdout.strip()}")
+                return True
+            else:
+                self.log("Buildozer is not installed")
+                return False
+        except FileNotFoundError:
+            self.log("Buildozer not found in PATH")
+            return False
     
-    if missing_packages:
-        log(f"Missing dependencies: {', '.join(missing_packages)}")
-        log("Installing missing dependencies...")
-        
+    def install_buildozer(self):
+        """Install buildozer if not already installed"""
+        self.log("Installing buildozer...")
         try:
-            subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "pip"], 
-                          check=True, capture_output=True)
-            
-            for package in missing_packages:
-                log(f"Installing {package}...")
-                subprocess.run([sys.executable, "-m", "pip", "install", package], 
-                              check=True, capture_output=True)
-                
-            log("All dependencies installed successfully")
+            subprocess.run(
+                [sys.executable, "-m", "pip", "install", "buildozer"],
+                check=True
+            )
+            self.log("Buildozer installed successfully")
             return True
         except subprocess.CalledProcessError as e:
-            log(f"Failed to install dependencies: {e}", error=True)
+            self.log(f"Failed to install buildozer: {str(e)}")
             return False
-    else:
-        log("All dependencies are satisfied")
-        return True
-
-def update_config_version():
-    """Update the app configuration with the current version"""
-    config_file = "ai_ceo_config.json"
     
-    if os.path.exists(config_file):
+    def check_dependencies(self):
+        """Check and install necessary dependencies"""
+        # Check if buildozer is installed
+        if not self.check_buildozer_installed():
+            if not self.install_buildozer():
+                self.log("Failed to install buildozer")
+                return False
+        
+        # Check if buildozer spec exists
+        if not os.path.exists(self.buildozer_spec):
+            self.log(f"Buildozer spec file not found: {self.buildozer_spec}")
+            self.log("Creating default buildozer spec...")
+            try:
+                subprocess.run(
+                    ["buildozer", "init"],
+                    check=True
+                )
+                self.log("Default buildozer spec created")
+            except subprocess.CalledProcessError as e:
+                self.log(f"Failed to create buildozer spec: {str(e)}")
+                return False
+        
+        # Configure app using AppConfigurator
+        app_configurator.configure_for_apk()
+        
+        # Ensure output directory exists
+        os.makedirs(self.output_dir, exist_ok=True)
+        
+        return True
+    
+    def clean_build(self):
+        """Clean previous build files"""
+        self.log("Cleaning previous build files...")
         try:
-            with open(config_file, 'r') as f:
-                config = json.load(f)
+            if os.path.exists(".buildozer"):
+                self.log("Removing .buildozer directory...")
+                shutil.rmtree(".buildozer")
             
-            config['version'] = APK_VERSION
-            config['production_build'] = True
-            config['debug_mode'] = DEBUG_MODE
-            config['build_timestamp'] = int(time.time())
+            self.log("Running buildozer clean...")
+            subprocess.run(
+                ["buildozer", "clean"],
+                check=True
+            )
             
-            with open(config_file, 'w') as f:
-                json.dump(config, f, indent=4)
-                
-            log(f"Updated config version to {APK_VERSION}")
+            self.log("Clean completed successfully")
             return True
-        except Exception as e:
-            log(f"Error updating config: {e}", error=True)
+        except (subprocess.CalledProcessError, OSError) as e:
+            self.log(f"Failed to clean build files: {str(e)}")
             return False
-    else:
-        log("Config file not found, creating a new one")
+    
+    def build_apk(self, clean=False):
+        """Build the Android APK"""
+        # Reset status
+        self.build_status = {
+            "status": "preparing",
+            "progress": 5,
+            "message": "Preparing build environment",
+            "output_file": None
+        }
+        
+        # Check dependencies
+        if not self.check_dependencies():
+            self.build_status.update({
+                "status": "failed",
+                "message": "Failed to prepare build environment"
+            })
+            return False
+        
+        # Clean if requested
+        if clean:
+            self.build_status["message"] = "Cleaning previous build files"
+            if not self.clean_build():
+                self.build_status.update({
+                    "status": "failed",
+                    "message": "Failed to clean build files"
+                })
+                return False
+        
+        # Start build
+        self.build_status.update({
+            "status": "building",
+            "progress": 10,
+            "message": "Building APK..."
+        })
+        
+        self.log("Building APK...")
         try:
-            config = {
-                'version': APK_VERSION,
-                'production_build': True,
-                'debug_mode': DEBUG_MODE,
-                'build_timestamp': int(time.time()),
-                'theme': 'default',
-                'token_balance': {'BBGT': 500, '918T': 20},
-                'active_subscriptions': {},
-                'trial_expiry': int(time.time()) + (3 * 60 * 60)
-            }
+            # Run buildozer to create APK
+            process = subprocess.Popen(
+                ["buildozer", "android", "debug"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                universal_newlines=True
+            )
             
-            with open(config_file, 'w') as f:
-                json.dump(config, f, indent=4)
+            # Monitor output
+            for line in process.stdout:
+                line = line.strip()
+                self.log(line)
                 
-            log(f"Created new config with version {APK_VERSION}")
-            return True
-        except Exception as e:
-            log(f"Error creating config: {e}", error=True)
-            return False
-
-def generate_assets():
-    """Generate necessary assets for the APK"""
-    log("Generating assets for APK...")
-    
-    # Create assets directory if it doesn't exist
-    if not os.path.exists('assets'):
-        os.makedirs('assets')
-    
-    try:
-        # Try to use the dedicated asset generator if it exists
-        if os.path.exists('generate_assets.py'):
-            result = run_command([sys.executable, 'generate_assets.py'], capture_output=True)
-            log(result.stdout)
-            return True
-        else:
-            # Otherwise, use the basic asset generation in this file
-            log("Asset generator not found, using basic asset generation")
-            return _generate_basic_assets()
-    except Exception as e:
-        log(f"Error generating assets: {e}", error=True)
-        return False
-
-def _generate_basic_assets():
-    """Generate basic assets if the asset generator is not available"""
-    try:
-        from PIL import Image, ImageDraw
-        import random
-        
-        # Generate a static TV image
-        img = Image.new('RGB', (300, 300), color=(0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        # Draw random noise for static effect
-        for x in range(300):
-            for y in range(300):
-                if random.random() > 0.5:
-                    brightness = random.randint(100, 255)
-                    draw.point((x, y), fill=(brightness, brightness, brightness))
-        
-        img.save('assets/tv_static.png')
-        log("Generated TV static image")
-        
-        # Generate a simple app icon
-        icon = Image.new('RGB', (192, 192), color=(10, 30, 60))
-        draw = ImageDraw.Draw(icon)
-        draw.rectangle([(20, 20), (172, 172)], fill=(0, 150, 255))
-        draw.ellipse([(50, 50), (142, 142)], fill=(255, 255, 255))
-        
-        icon.save('assets/app_icon.png')
-        log("Generated app icon")
-        
-        return True
-    except ImportError:
-        log("PIL not available, copying existing SVG files")
-        # Copy any existing SVG files
-        for file in ['tv_static.svg', 'tv_frame.svg', 'adtv_logo.svg']:
-            if os.path.exists(file):
-                import shutil
-                shutil.copy(file, os.path.join('assets', file))
-        return True
-    except Exception as e:
-        log(f"Error in basic asset generation: {e}", error=True)
-        return False
-
-def verify_files():
-    """Verify all required files exist"""
-    log("Verifying required files...")
-    
-    required_files = [
-        'mobile_preview.py',
-        'buildozer.spec'
-    ]
-    
-    missing_files = [f for f in required_files if not os.path.exists(f)]
-    
-    if missing_files:
-        log(f"Missing required files: {', '.join(missing_files)}", error=True)
-        return False
-    
-    # Verify mobile_preview.py can be compiled
-    try:
-        import py_compile
-        py_compile.compile('mobile_preview.py')
-        log("mobile_preview.py compiled successfully")
-    except Exception as e:
-        log(f"Error compiling mobile_preview.py: {e}", error=True)
-        return False
-    
-    return True
-
-def update_buildozer_spec():
-    """Update buildozer.spec with production settings"""
-    log("Updating buildozer.spec for production...")
-    
-    try:
-        with open('buildozer.spec', 'r') as f:
-            lines = f.readlines()
-        
-        updated_lines = []
-        for line in lines:
-            # Update version
-            if line.strip().startswith('version ='):
-                updated_lines.append(f'version = {APK_VERSION}\n')
-            # Ensure directory paths are set
-            elif line.strip().startswith('# bin_dir ='):
-                updated_lines.append('bin_dir = ./bin\n')
+                # Update progress based on output
+                if "Gradle build done" in line:
+                    self.build_status.update({
+                        "progress": 90,
+                        "message": "Gradle build completed"
+                    })
+                elif "Packaging" in line:
+                    self.build_status.update({
+                        "progress": 80,
+                        "message": "Packaging APK"
+                    })
+                elif "Android SDK found" in line:
+                    self.build_status.update({
+                        "progress": 20,
+                        "message": "Android SDK found"
+                    })
+                elif "Compiling" in line:
+                    self.build_status.update({
+                        "progress": 50,
+                        "message": "Compiling sources"
+                    })
+            
+            # Wait for process to complete
+            process.wait()
+            
+            # Check if build was successful
+            if process.returncode == 0:
+                self.log("APK build completed successfully")
+                
+                # Find the APK file
+                apk_files = [f for f in os.listdir(self.output_dir) if f.endswith(".apk")]
+                if apk_files:
+                    apk_path = os.path.join(self.output_dir, apk_files[0])
+                    self.build_status.update({
+                        "status": "success",
+                        "progress": 100,
+                        "message": "APK build completed successfully",
+                        "output_file": apk_path
+                    })
+                    self.log(f"APK file: {apk_path}")
+                    return True
+                else:
+                    self.build_status.update({
+                        "status": "failed",
+                        "progress": 90,
+                        "message": "APK build completed but no APK file found"
+                    })
+                    self.log("No APK file found in the bin directory")
+                    return False
             else:
-                updated_lines.append(line)
-        
-        with open('buildozer.spec', 'w') as f:
-            f.writelines(updated_lines)
-            
-        log("buildozer.spec updated successfully")
-        return True
-    except Exception as e:
-        log(f"Error updating buildozer.spec: {e}", error=True)
-        return False
-
-def build_apk(build_mode='debug'):
-    """Build the APK using buildozer"""
-    log(f"Building APK in {build_mode} mode...")
-    
-    # Ensure bin directory exists
-    if not os.path.exists('bin'):
-        os.makedirs('bin')
-    
-    # Run buildozer
-    try:
-        run_command(['buildozer', 'android', build_mode])
-        
-        # Determine expected APK filename
-        if build_mode == 'release':
-            apk_path = f'bin/aiceosystem-{APK_VERSION}-arm64-v8a_armeabi-v7a-release.apk'
-        else:
-            apk_path = f'bin/aiceosystem-{APK_VERSION}-arm64-v8a_armeabi-v7a-debug.apk'
-        
-        # Check if old version filename exists if the expected one doesn't
-        if not os.path.exists(apk_path):
-            old_version_path = f'bin/aiceosystem-0.1-arm64-v8a_armeabi-v7a-debug.apk'
-            if os.path.exists(old_version_path):
-                apk_path = old_version_path
-        
-        # Check if build was successful
-        if os.path.exists(apk_path):
-            apk_size = os.path.getsize(apk_path) / (1024 * 1024)  # Size in MB
-            log(f"APK build completed successfully!")
-            log(f"APK file: {apk_path}")
-            log(f"APK size: {apk_size:.2f} MB")
-            return True
-        else:
-            log("APK file not found after build", error=True)
-            
-            # Try to show the error from buildozer log
-            import glob
-            log_files = glob.glob('.buildozer/logs/buildozer-*.log')
-            if log_files:
-                latest_log = max(log_files, key=os.path.getctime)
-                log(f"Showing last 20 lines from {latest_log}:")
-                with open(latest_log, 'r') as f:
-                    lines = f.readlines()
-                    for line in lines[-20:]:
-                        log(line.strip())
-            
+                self.build_status.update({
+                    "status": "failed",
+                    "progress": 0,
+                    "message": "APK build failed"
+                })
+                self.log("APK build failed")
+                return False
+                
+        except Exception as e:
+            self.build_status.update({
+                "status": "failed",
+                "message": f"Build error: {str(e)}"
+            })
+            self.log(f"Build error: {str(e)}")
             return False
-    except Exception as e:
-        log(f"Error building APK: {e}", error=True)
-        return False
+    
+    def get_build_status(self):
+        """Get the current build status"""
+        return self.build_status
 
-def main():
-    """Main execution function"""
-    log("Starting AI CEO APK Builder v1.0.0")
-    
-    # Parse command-line arguments
-    import argparse
-    parser = argparse.ArgumentParser(description='AI CEO APK Builder')
-    parser.add_argument('--mode', choices=['debug', 'release'], default='debug',
-                      help='Build mode (debug or release)')
-    parser.add_argument('--debug', action='store_true',
-                      help='Enable debug output')
-    
-    args = parser.parse_args()
-    
-    # Set debug mode based on arguments
-    global DEBUG_MODE
-    DEBUG_MODE = args.debug
-    
-    build_mode = args.mode
-    log(f"Build mode: {build_mode}")
-    log(f"Debug mode: {'Enabled' if DEBUG_MODE else 'Disabled'}")
-    
-    # Build process steps
-    steps = [
-        ("Check dependencies", check_dependencies),
-        ("Update config version", update_config_version),
-        ("Verify required files", verify_files),
-        ("Update buildozer.spec", update_buildozer_spec),
-        ("Generate assets", generate_assets),
-        ("Build APK", lambda: build_apk(build_mode))
-    ]
-    
-    # Execute build steps
-    for step_name, step_func in steps:
-        log(f"Step: {step_name}")
-        success = step_func()
-        if not success:
-            log(f"Build failed at step: {step_name}", error=True)
-            return 1
-    
-    log("AI CEO APK build completed successfully")
-    return 0
+# Create instance for direct use
+apk_builder = APKBuilder()
 
 if __name__ == "__main__":
-    exit_code = main()
-    sys.exit(exit_code)
+    # If run directly, build the APK
+    if apk_builder.build_apk():
+        print("APK build successful!")
+        print(f"APK file: {apk_builder.build_status['output_file']}")
+    else:
+        print("APK build failed")
+        print(f"Error: {apk_builder.build_status['message']}")
