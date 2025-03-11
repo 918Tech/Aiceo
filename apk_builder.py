@@ -235,14 +235,6 @@ class APKBuilder:
     def get_build_status(self):
         """Get the current build status"""
         return self.build_status
-        
-    def generate_release_apk(self):
-        """Generate a release APK"""
-        self.log("Generating release APK...")
-        # Clean and build
-        if not self.clean_build():
-            return False
-        return self.build_apk(clean=True)
 
 # Create instance for direct use
 apk_builder = APKBuilder()

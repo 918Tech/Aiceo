@@ -387,16 +387,6 @@ class SettingsPanel(TabbedPanelItem):
         self.save_btn.bind(on_press=self.on_save)
         content.add_widget(self.save_btn)
 
-        # Add APK download button
-        self.download_btn = Button(
-            text='Download Mobile App',
-            size_hint_y=None,
-            height=dp(40),
-            background_color=(0.2, 0.6, 1, 1)
-        )
-        self.download_btn.bind(on_press=self.on_download_apk)
-        content.add_widget(self.download_btn)
-
         # Add some spacing
         content.add_widget(Label(size_hint_y=0.1))
 
@@ -471,35 +461,6 @@ class SettingsPanel(TabbedPanelItem):
             self.ai_ceo_app.console.add_message("Settings saved successfully", True)
         except Exception as e:
             self.ai_ceo_app.console.add_message(f"Error saving settings: {str(e)}", True)
-
-    def on_download_apk(self, instance):
-        """Handle APK download button press"""
-        from apk_builder import apk_builder
-        
-        # Disable button during download
-        instance.disabled = True
-        original_text = instance.text
-        instance.text = "Preparing APK..."
-        
-        def update_status(dt):
-            status = apk_builder.get_build_status()
-            if status['status'] == 'building':
-                instance.text = f"Building APK... {status['progress']}%"
-            elif status['status'] == 'success':
-                instance.text = "Download Ready"
-                instance.disabled = False
-                import webbrowser
-                webbrowser.open('http://0.0.0.0:8080/download-apk')
-                Clock.unschedule(update_status)
-                Clock.schedule_once(lambda dt: setattr(instance, 'text', original_text), 3)
-            elif status['status'] == 'failed':
-                instance.text = "Build Failed"
-                instance.disabled = False
-                Clock.unschedule(update_status)
-                Clock.schedule_once(lambda dt: setattr(instance, 'text', original_text), 3)
-        
-        Clock.schedule_interval(update_status, 0.5)
-        self.ai_ceo_app.console.add_message("Starting APK build...", True)
 
     def update_status(self, dt):
         """Update UI with current system status"""
